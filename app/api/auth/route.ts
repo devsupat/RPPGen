@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAccessCode, isGoogleSheetsConfigured } from '@/lib/googleSheets';
+import { trackEvent } from '@/lib/metrics';
 
 export async function POST(request: NextRequest) {
     try {
@@ -29,6 +30,9 @@ export async function POST(request: NextRequest) {
             // Demo mode: allow any access code for development
             console.warn('⚠️ Google Sheets not configured. Running in DEMO mode.');
 
+            // Track login event
+            trackEvent('login');
+
             return NextResponse.json({
                 success: true,
                 user: {
@@ -45,6 +49,9 @@ export async function POST(request: NextRequest) {
         const result = await validateAccessCode(accessCode.trim(), deviceHash);
 
         if (result.success) {
+            // Track successful login
+            trackEvent('login');
+
             return NextResponse.json({
                 success: true,
                 user: result.user

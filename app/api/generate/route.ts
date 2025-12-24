@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateCompletion, isGroqConfigured } from '@/lib/groq';
 import { SYSTEM_PROMPT, buildUserPrompt, parseRPPMResponse } from '@/lib/promptTemplates';
 import { getCPTextForPrompt, getPhaseByClass, isValidSubjectForPhase } from '@/data/cp_registry';
+import { trackEvent } from '@/lib/metrics';
 import type { RPPMInput, PhaseName } from '@/types';
 
 export async function POST(request: NextRequest) {
@@ -60,6 +61,8 @@ export async function POST(request: NextRequest) {
         // Check if Groq is configured
         if (!isGroqConfigured()) {
             console.warn('⚠️ Groq API not configured. Returning demo data.');
+            // Track demo generation
+            trackEvent('rppm_generated');
             return NextResponse.json({
                 success: true,
                 rppm: getDemoRPPM(inputWithFase),
@@ -105,6 +108,9 @@ export async function POST(request: NextRequest) {
 
         // Return generated RPPM
         // NOTE: This data is NOT stored. Generate → Download → Forget
+        // Track successful generation
+        trackEvent('rppm_generated');
+
         return NextResponse.json({
             success: true,
             rppm: rppmOutput

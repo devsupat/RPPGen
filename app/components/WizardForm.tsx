@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, Sparkles, Clock, Users, BookOpen, FileText, Target, Settings } from 'lucide-react';
+import { Loader2, Sparkles, Clock, Users, BookOpen, FileText, Target, Settings, MapPin, Calendar } from 'lucide-react';
 import {
     getJenjangOptions,
     getClassesByJenjang,
@@ -14,7 +14,7 @@ import type { RPPMInput, IdentityInput, CurriculumInput, PhaseName } from '@/typ
 interface WizardFormProps {
     userSekolah?: string;
     userName?: string;
-    onGenerate: (rppm: Record<string, unknown>) => void;
+    onGenerate: (rppm: any) => void;
 }
 
 const MODEL_PEMBELAJARAN = [
@@ -46,6 +46,8 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
     const [nipKepsek, setNipKepsek] = useState('');
     const [namaGuru, setNamaGuru] = useState(userName || '');
     const [nipGuru, setNipGuru] = useState('');
+    const [kota, setKota] = useState('Tangerang');
+    const [tanggalKeabsahan, setTanggalKeabsahan] = useState(new Date().toISOString().split('T')[0]);
 
     // Curriculum fields
     const [jenjang, setJenjang] = useState<'SD' | 'SMP' | 'SMA' | ''>('');
@@ -119,6 +121,8 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                     nipKepsek,
                     namaGuru,
                     nipGuru,
+                    kota,
+                    tanggalKeabsahan,
                 },
                 curriculum: {
                     jenjang: jenjang as 'SD' | 'SMP' | 'SMA',
@@ -126,40 +130,25 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                     fase: fase as PhaseName,
                     mapel,
                     topikMateri,
-                    kondisiAwalMurid,
-                },
-            };
-
-            // Add extended fields as metadata
-            const extendedInput = {
-                ...input,
-                extended: {
-                    semester,
                     detailMateri,
+                    semester,
                     alokasiWaktu,
                     jumlahPertemuan: parseInt(jumlahPertemuan),
-                    modelPembelajaran,
-                }
+                    model: modelPembelajaran,
+                    kondisiAwalMurid,
+                },
             };
 
             const response = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(extendedInput),
+                body: JSON.stringify(input),
             });
 
             const data = await response.json();
 
             if (data.success) {
-                // Merge extended data into response
-                const rppmWithExtended = {
-                    ...data.rppm,
-                    alokasiWaktu,
-                    jumlahPertemuan,
-                    semester,
-                    modelPembelajaran: MODEL_PEMBELAJARAN.find(m => m.value === modelPembelajaran)?.label,
-                };
-                onGenerate(rppmWithExtended);
+                onGenerate(data.rppm);
             } else {
                 setError(data.error || 'Gagal menghasilkan RPPM');
             }
@@ -245,6 +234,30 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                                 placeholder="Kosongkan jika belum ada"
                                 className="input"
                             />
+                        </div>
+                        <div>
+                            <label className="label label-required">Kota Administrasi</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={kota}
+                                    onChange={(e) => setKota(e.target.value)}
+                                    className="input pl-10"
+                                />
+                                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="label label-required">Tanggal Keabsahan</label>
+                            <div className="relative">
+                                <input
+                                    type="date"
+                                    value={tanggalKeabsahan}
+                                    onChange={(e) => setTanggalKeabsahan(e.target.value)}
+                                    className="input pl-10"
+                                />
+                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -392,20 +405,17 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                             <textarea
                                 value={detailMateri}
                                 onChange={(e) => setDetailMateri(e.target.value)}
-                                placeholder="Tuliskan sub-topik atau poin-poin materi yang harus dicakup:&#10;- Mengidentifikasi pecahan&#10;- Membandingkan pecahan&#10;- Operasi penjumlahan pecahan"
+                                placeholder="Tuliskan sub-topik atau poin-poin materi yang harus dicakup..."
                                 className="input min-h-[120px] resize-none"
                                 rows={5}
                             />
-                            <p className="text-xs text-gray-400 mt-1">
-                                AI akan generate berdasarkan detail ini (100% sesuai input)
-                            </p>
                         </div>
                         <div>
                             <label className="label">Kondisi Awal Murid <span className="text-gray-400">(opsional)</span></label>
                             <textarea
                                 value={kondisiAwalMurid}
                                 onChange={(e) => setKondisiAwalMurid(e.target.value)}
-                                placeholder="Contoh: Murid sudah memahami konsep pecahan sederhana, namun kesulitan dengan pecahan campuran"
+                                placeholder="Contoh: Murid sudah memahami konsep pecahan sederhana..."
                                 className="input min-h-[80px] resize-none"
                                 rows={3}
                             />
@@ -468,34 +478,7 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                             <span className="text-gray-500">Mata Pelajaran</span>
                             <span className="font-medium text-gray-800">{mapel || '-'}</span>
                         </div>
-                        <div className="flex justify-between py-2 border-b border-gray-100">
-                            <span className="text-gray-500">Alokasi Waktu</span>
-                            <span className="font-medium text-gray-800">{alokasiWaktu}</span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b border-gray-100">
-                            <span className="text-gray-500">Pertemuan</span>
-                            <span className="font-medium text-gray-800">{jumlahPertemuan}x</span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b border-gray-100">
-                            <span className="text-gray-500">Model</span>
-                            <span className="font-medium text-gray-800">
-                                {MODEL_PEMBELAJARAN.find(m => m.value === modelPembelajaran)?.label.split(' ')[0]}
-                            </span>
-                        </div>
-                        <div className="pt-2">
-                            <span className="text-gray-500">Topik</span>
-                            <p className="font-medium text-gray-800 mt-1">{topikMateri || '-'}</p>
-                        </div>
                     </div>
-
-                    {phaseLabel && (
-                        <div className="mt-6 p-3 bg-green-50 rounded-lg">
-                            <p className="text-sm text-green-700 font-medium">{phaseLabel}</p>
-                            <p className="text-xs text-green-600 mt-1">
-                                CP SK 046/2025 akan digunakan sebagai acuan
-                            </p>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

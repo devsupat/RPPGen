@@ -47,7 +47,9 @@ export interface IdentityInput {
     namaKepsek: string;
     nipKepsek: string;
     namaGuru: string;
-    nipGuru?: string; // Optional
+    nipGuru?: string;
+    kota: string;
+    tanggalKeabsahan?: string;
 }
 
 export interface CurriculumInput {
@@ -56,7 +58,12 @@ export interface CurriculumInput {
     fase: PhaseName;
     mapel: string;
     topikMateri: string;
-    kondisiAwalMurid?: string; // Optional - untuk diagnostik
+    detailMateri?: string;
+    semester: string;
+    alokasiWaktu: string;
+    jumlahPertemuan: number;
+    model: string;
+    kondisiAwalMurid?: string;
 }
 
 export interface RPPMInput {
@@ -68,79 +75,10 @@ export interface RPPMInput {
 // RPPM Output Types (Generated Result)
 // ============================================
 
-export interface IdentifikasiMurid {
-    karakteristikMurid: string;
-    karakterMateri: string;
-    dimensiProfilLulusan: string[];
-}
-
-export interface DesainPembelajaran {
-    model: 'PBL' | 'PjBL';
-    pendekatanDeepLearning: {
-        berkesadaran: string;
-        bermakna: string;
-        menggembirakan: string;
-    };
-    pemanfaatanDigital: string[];
-}
-
-export interface KegiatanPembelajaran {
-    pendahuluan: string[];
-    kegiatan_inti: {
-        deskripsi: string;
-        labelKompetensi: string; // e.g., "Mengaplikasi, Bermakna"
-    }[];
-    penutup: string[];
-}
-
-// Taksonomi SOLO Levels
-export type SOLOLevel =
-    | 'Prestructural'
-    | 'Unistructural'
-    | 'Multistructural'
-    | 'Relational'
-    | 'Extended Abstract';
-
-export interface RubrikPenilaian {
-    level: SOLOLevel;
-    deskripsi: string;
-    indikator: string;
-}
-
 export interface RPPMOutput {
-    // Header
-    judul: string;
-    sekolah: string;
-    kepsek: { nama: string; nip: string };
-    guru: { nama: string; nip?: string };
-    mapel: string;
-    kelas: string;
-    fase: string;
-    topik: string;
-
-    // Capaian Pembelajaran (from CP Registry)
-    capaianPembelajaran: Record<string, string>;
-
-    // Deep Learning Structure
-    identifikasi: IdentifikasiMurid;
-    desainPembelajaran: DesainPembelajaran;
-    pengalamanBelajar: KegiatanPembelajaran;
-
-    // Killer Feature: Taksonomi SOLO
-    rubrikPenilaian: RubrikPenilaian[];
+    fullHtml: string;
+    generatedAt: string;
 }
-
-// ============================================
-// Form Wizard Types
-// ============================================
-
-export interface FormStep {
-    id: number;
-    title: string;
-    description: string;
-}
-
-export type WizardStep = 'identity' | 'curriculum' | 'preview';
 
 // ============================================
 // API Response Types
@@ -149,5 +87,6 @@ export type WizardStep = 'identity' | 'curriculum' | 'preview';
 export interface GenerateResponse {
     success: boolean;
     rppm?: RPPMOutput;
+    isDemo?: boolean;
     error?: string;
 }

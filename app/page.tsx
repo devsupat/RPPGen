@@ -35,6 +35,12 @@ export default function Home() {
     setAppState('wizard');
   };
 
+  const handleLogout = () => {
+    setAppState('login');
+    setUser(null);
+    setGeneratedRPPM(null);
+  };
+
   return (
     <div className="min-h-screen">
       {/* Header for authenticated users */}
@@ -46,18 +52,15 @@ export default function Home() {
                 <div className="header-logo">G</div>
                 <div>
                   <div className="header-title">GuruPintar AI</div>
-                  <div className="header-subtitle">{user.sekolah}</div>
+                  <div className="header-subtitle">Generator RPPM Deep Learning</div>
                 </div>
               </div>
               <div className="header-user">
                 <div className="header-user-name">{user.nama}</div>
+                <div className="text-xs text-gray-500">{user.sekolah}</div>
                 <button
-                  onClick={() => {
-                    setAppState('login');
-                    setUser(null);
-                    setGeneratedRPPM(null);
-                  }}
-                  className="header-logout"
+                  onClick={handleLogout}
+                  className="header-logout mt-1"
                 >
                   Keluar
                 </button>
@@ -78,6 +81,7 @@ export default function Home() {
             <div className="container-main">
               <WizardForm
                 userSekolah={user?.sekolah}
+                userName={user?.nama}
                 onGenerate={handleGenerate}
               />
             </div>
@@ -99,12 +103,9 @@ export default function Home() {
 
       {/* Footer for login */}
       {appState === 'login' && (
-        <footer className="fixed bottom-0 left-0 right-0 p-6 text-center">
-          <p className="text-sm text-neutral-400">
-            Dibuat dengan ❤️ untuk guru Indonesia
-          </p>
-          <p className="text-xs text-neutral-400 mt-1">
-            Kurikulum Merdeka 2025 · SK 046/2025
+        <footer className="fixed bottom-0 left-0 right-0 p-4 text-center">
+          <p className="text-xs text-gray-400">
+            © 2025 GuruPintar AI · Kurikulum Merdeka · SK 046/2025
           </p>
         </footer>
       )}

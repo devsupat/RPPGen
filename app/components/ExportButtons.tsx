@@ -9,6 +9,15 @@ interface ExportButtonsProps {
     rppm: Record<string, unknown>;
 }
 
+// Fire-and-forget tracking (don't block UI)
+function trackExport(event: 'docx_export' | 'pdf_export') {
+    fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event }),
+    }).catch(() => { }); // Silently ignore errors
+}
+
 export default function ExportButtons({ rppm }: ExportButtonsProps) {
     const [isExportingDocx, setIsExportingDocx] = useState(false);
     const [isExportingPdf, setIsExportingPdf] = useState(false);
@@ -17,6 +26,7 @@ export default function ExportButtons({ rppm }: ExportButtonsProps) {
         setIsExportingDocx(true);
         try {
             await exportToDocx(rppm);
+            trackExport('docx_export');
         } catch (error) {
             console.error('Export DOCX error:', error);
             alert('Gagal mengunduh file DOCX. Silakan coba lagi.');
@@ -29,6 +39,7 @@ export default function ExportButtons({ rppm }: ExportButtonsProps) {
         setIsExportingPdf(true);
         try {
             await exportToPdf(rppm);
+            trackExport('pdf_export');
         } catch (error) {
             console.error('Export PDF error:', error);
             alert('Gagal mengunduh file PDF. Silakan coba lagi.');

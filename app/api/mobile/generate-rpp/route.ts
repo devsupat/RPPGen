@@ -46,7 +46,7 @@ interface MobileErrorResponse {
 }
 
 // Upgrade URL for paid plans
-const UPGRADE_URL = 'https://lynk.id/gurupintar';
+const UPGRADE_URL = 'https://lynk.id/oghiezr';
 
 /**
  * Transform mobile request format to standard RPPMInput format

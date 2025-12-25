@@ -179,9 +179,9 @@ export default function WizardForm({ userSekolah, userName, onGenerate, onRateLi
     return (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
             {/* LEFT PANEL - Form Input (2/3 width) */}
-            <div className="lg:col-span-3 space-y-16">
+            <div className="lg:col-span-3 wizard-form-sections">
                 {/* Header */}
-                <div className="card p-10 sm:p-12">
+                <div className="card wizard-card">
                     <h2 className="text-xl font-bold text-gray-900">Generator RPPM Deep Learning</h2>
                     <p className="text-sm text-gray-500 mt-1">Kurikulum Merdeka · SK 046/2025</p>
                 </div>
@@ -194,15 +194,15 @@ export default function WizardForm({ userSekolah, userName, onGenerate, onRateLi
                 )}
 
                 {/* Data Sekolah */}
-                <div className="card card-accent-blue p-10 sm:p-12">
-                    <div className="mb-8">
+                <div className="card card-accent-blue wizard-card">
+                    <div className="wizard-section-header">
                         <h3 className="section-title flex items-center gap-2">
                             <BookOpen className="w-5 h-5 text-blue-500" />
                             Data Sekolah & Guru
                         </h3>
                         <p className="section-subtitle">Informasi identitas sekolah dan penyusun RPPM</p>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    <div className="wizard-form-grid wizard-form-grid-2">
                         <div className="sm:col-span-2">
                             <label className="label label-required">Nama Sekolah</label>
                             <input
@@ -281,15 +281,15 @@ export default function WizardForm({ userSekolah, userName, onGenerate, onRateLi
                 </div>
 
                 {/* Kurikulum */}
-                <div className="card card-accent-green p-10 sm:p-12">
-                    <div className="mb-8">
+                <div className="card card-accent-green wizard-card">
+                    <div className="wizard-section-header">
                         <h3 className="section-title flex items-center gap-2">
                             <Target className="w-5 h-5 text-green-500" />
                             Data Kurikulum
                         </h3>
                         <p className="section-subtitle">Jenjang, kelas, fase, dan mata pelajaran</p>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
+                    <div className="wizard-form-grid wizard-form-grid-4">
                         <div>
                             <label className="label label-required">Jenjang</label>
                             <select
@@ -359,15 +359,15 @@ export default function WizardForm({ userSekolah, userName, onGenerate, onRateLi
                 </div>
 
                 {/* Pengaturan Pertemuan */}
-                <div className="card card-accent-orange p-10 sm:p-12">
-                    <div className="mb-8">
+                <div className="card card-accent-orange wizard-card">
+                    <div className="wizard-section-header">
                         <h3 className="section-title flex items-center gap-2">
                             <Clock className="w-5 h-5 text-orange-500" />
                             Pengaturan Pertemuan
                         </h3>
                         <p className="section-subtitle">Alokasi waktu dan model pembelajaran</p>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
+                    <div className="wizard-form-grid wizard-form-grid-3">
                         <div>
                             <label className="label label-required">Alokasi Waktu</label>
                             <select
@@ -408,15 +408,15 @@ export default function WizardForm({ userSekolah, userName, onGenerate, onRateLi
                 </div>
 
                 {/* Materi */}
-                <div className="card card-accent-purple p-10 sm:p-12">
-                    <div className="mb-8">
+                <div className="card card-accent-purple wizard-card">
+                    <div className="wizard-section-header">
                         <h3 className="section-title flex items-center gap-2">
                             <FileText className="w-5 h-5 text-purple-500" />
                             Materi Pembelajaran
                         </h3>
                         <p className="section-subtitle">Topik, detail materi, dan kondisi awal murid</p>
                     </div>
-                    <div className="space-y-8">
+                    <div className="wizard-input-stack">
                         <div>
                             <label className="label label-required">Topik Utama</label>
                             <input
@@ -476,7 +476,7 @@ export default function WizardForm({ userSekolah, userName, onGenerate, onRateLi
 
             {/* RIGHT PANEL - Preview Info (1/3 width) */}
             <div className="hidden lg:block lg:col-span-2">
-                <div className="card p-10 sm:p-12 sticky top-24 shadow-sm ml-4">
+                <div className="card wizard-card sticky top-24 shadow-sm ml-4">
                     <h3 className="section-title mb-6 flex items-center gap-2">
                         <Settings className="w-5 h-5 text-gray-500" />
                         Preview Pengaturan

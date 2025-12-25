@@ -6,7 +6,7 @@ import { exportToDocx } from '@/lib/exportDocx';
 import { exportToPdf } from '@/lib/exportPdf';
 
 interface ExportButtonsProps {
-    rppm: Record<string, unknown>;
+    rppm: { fullHtml: string; generatedAt: string };
 }
 
 // Fire-and-forget tracking (don't block UI)

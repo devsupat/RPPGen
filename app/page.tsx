@@ -20,7 +20,7 @@ type AppState = 'login' | 'wizard' | 'preview';
 export default function Home() {
   const [appState, setAppState] = useState<AppState>('login');
   const [user, setUser] = useState<User | null>(null);
-  const [generatedRPPM, setGeneratedRPPM] = useState<Record<string, unknown> | null>(null);
+  const [generatedRPPM, setGeneratedRPPM] = useState<{ fullHtml: string; generatedAt: string } | null>(null);
 
   // API Settings modals
   const [showApiLimitModal, setShowApiLimitModal] = useState(false);
@@ -31,7 +31,7 @@ export default function Home() {
     setAppState('wizard');
   };
 
-  const handleGenerate = (rppm: Record<string, unknown>) => {
+  const handleGenerate = (rppm: { fullHtml: string; generatedAt: string }) => {
     setGeneratedRPPM(rppm);
     setAppState('preview');
   };

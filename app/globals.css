@@ -56,6 +56,22 @@
   --radius-xl: 1.5rem;
   --radius-2xl: 2rem;
 
+  /* ============================================
+     A. GLOBAL SPACING SYSTEM (Teacher Comfort)
+     ============================================ */
+  --section-gap: 2.75rem;
+  /* 44px between major sections - comfortable breathing */
+  --card-padding: 2.5rem;
+  /* 40px internal card padding */
+  --inner-group-gap: 1.75rem;
+  /* 28px between form groups */
+  --label-input-gap: 0.625rem;
+  /* 10px between label and input */
+  --minimum-section-gap: 44px;
+  /* enforced minimum between cards */
+  --section-header-gap: 2rem;
+  /* 32px gap below section header */
+
   /* Shadows */
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
@@ -63,7 +79,32 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  --shadow-card: 0 0 0 1px rgb(0 0 0 / 0.03), 0 2px 4px rgb(0 0 0 / 0.05), 0 12px 24px rgb(0 0 0 / 0.05);
+  --shadow-card: 0 0 0 1px rgb(0 0 0 / 0.02), 0 1px 3px rgb(0 0 0 / 0.04), 0 8px 16px rgb(0 0 0 / 0.03);
+  --shadow-card-subtle: 0 1px 2px rgb(0 0 0 / 0.03), 0 4px 8px rgb(0 0 0 / 0.02);
+
+  /* ============================================
+     SOFT TOSCA-BASED PASTEL PALETTE
+     Teacher-friendly, low saturation, calming
+     ============================================ */
+  /* Data Sekolah - Soft Blue Tosca */
+  --section-blue-bg: hsl(185, 35%, 97%);
+  --section-blue-border: hsl(185, 40%, 65%);
+  --section-blue-accent: hsl(185, 45%, 55%);
+
+  /* Kurikulum - Soft Green Tosca */
+  --section-green-bg: hsl(168, 32%, 96%);
+  --section-green-border: hsl(168, 38%, 58%);
+  --section-green-accent: hsl(168, 42%, 48%);
+
+  /* Pertemuan - Soft Orange Peach */
+  --section-orange-bg: hsl(28, 45%, 97%);
+  --section-orange-border: hsl(28, 50%, 70%);
+  --section-orange-accent: hsl(28, 55%, 60%);
+
+  /* Materi - Soft Purple Lavender */
+  --section-purple-bg: hsl(270, 30%, 97%);
+  --section-purple-border: hsl(270, 35%, 72%);
+  --section-purple-accent: hsl(270, 40%, 62%);
 }
 
 * {
@@ -78,16 +119,17 @@ html {
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(180deg, var(--neutral-100) 0%, var(--neutral-50) 100%);
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #fafafa 100%);
   min-height: 100vh;
-  color: var(--neutral-800);
-  line-height: 1.6;
+  color: var(--neutral-700);
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.01em;
 }
 
 /* ============================================
-   Typography System
+   Typography System - Calmer Hierarchy
    ============================================ */
 h1,
 h2,
@@ -96,9 +138,9 @@ h4,
 h5,
 h6 {
   font-weight: 600;
-  line-height: 1.3;
-  color: var(--neutral-900);
-  letter-spacing: -0.02em;
+  line-height: 1.4;
+  color: var(--neutral-800);
+  letter-spacing: -0.01em;
 }
 
 h1 {
@@ -134,27 +176,29 @@ h4 {
 }
 
 /* ============================================
-   Card System
+   Card System - Calmer Visual Weight
    ============================================ */
 .card {
   background: white;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
-  border: 1px solid var(--neutral-200);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  padding: var(--card-padding);
 }
 
 .card-elevated {
   background: white;
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-lg);
   border: 1px solid var(--neutral-100);
+  padding: var(--card-padding);
 }
 
 .card-section {
   background: var(--neutral-50);
   border-radius: var(--radius-lg);
   border: 1px solid var(--neutral-200);
-  padding: 1.25rem;
+  padding: var(--inner-group-gap);
 }
 
 .card-section-primary {
@@ -238,14 +282,16 @@ h4 {
 }
 
 /* ============================================
-   Form Elements
+   B. FORM ELEMENTS - Teacher Comfort (Age 25-55)
+   Unified height system for perfect alignment
    ============================================ */
 .label {
   display: block;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--neutral-700);
-  margin-bottom: 0.5rem;
+  color: var(--neutral-600);
+  margin-bottom: var(--label-input-gap);
+  line-height: 1.5;
 }
 
 .label-required::after {
@@ -253,15 +299,33 @@ h4 {
   color: var(--error-500);
 }
 
-.input {
+/* UNIFIED FORM INPUT SYSTEM - Consistent Height */
+.input,
+.select,
+input.input,
+select.input {
   width: 100%;
-  padding: 0.875rem 1rem;
-  font-size: 0.9375rem;
+  height: 3.25rem;
+  /* Fixed height for perfect alignment */
+  padding: 0 1rem;
+  font-size: 1rem;
+  font-family: inherit;
   border: 1.5px solid var(--neutral-200);
   border-radius: var(--radius-md);
   background: white;
-  color: var(--neutral-900);
+  color: var(--neutral-800);
   transition: all 0.2s ease;
+  line-height: 1.5;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+/* Textarea override - allow flexible height */
+textarea.input {
+  height: auto;
+  min-height: 5rem;
+  padding: 0.875rem 1rem;
+  resize: vertical;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -276,8 +340,8 @@ h4 {
 
 .input:focus {
   outline: none;
-  border-color: var(--primary-500);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  border-color: var(--primary-400);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
 }
 
 .input::placeholder {
@@ -287,28 +351,78 @@ h4 {
 .input:disabled {
   background: var(--neutral-100);
   cursor: not-allowed;
+  color: var(--neutral-500);
 }
 
+/* SELECT - Inherit unified height + dropdown arrow */
 .select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 0.875rem center;
+  background-position: right 0.75rem center;
   background-repeat: no-repeat;
   background-size: 1.25rem;
-  padding-right: 3rem;
+  padding-right: 2.75rem;
+  cursor: pointer;
 }
 
-/* Strict spacing system for teacher comfort */
-.label {
-  line-height: 1.75 !important;
-}
-
-.input {
-  line-height: 1.75 !important;
-}
-
+/* Form group spacing */
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--inner-group-gap);
+}
+
+/* Section spacing utilities */
+.section-gap {
+  gap: var(--section-gap);
+}
+
+.section-spacing>*+* {
+  margin-top: var(--section-gap);
+}
+
+.card-padding {
+  padding: var(--card-padding);
+}
+
+.inner-group-gap {
+  gap: var(--inner-group-gap);
+}
+
+.label-input-gap {
+  margin-bottom: var(--label-input-gap);
+}
+
+/* Form section improvements */
+.form-section-card {
+  padding: var(--card-padding);
+}
+
+.form-section-card>*:first-child {
+  margin-top: 0;
+}
+
+.form-section-card>*:last-child {
+  margin-bottom: 0;
+}
+
+/* Input group spacing */
+.input-group {
+  margin-bottom: var(--inner-group-gap);
+}
+
+.input-group:last-child {
+  margin-bottom: 0;
+}
+
+/* C. SECTION HEADER - Reduced Visual Weight */
+.section-header-subdued {
+  opacity: 0.85;
+}
+
+/* D. PREVIEW PANEL - Secondary Styling */
+.preview-panel-secondary {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(226, 232, 240, 0.5);
+  box-shadow: var(--shadow-card-subtle);
 }
 
 
@@ -728,10 +842,14 @@ h4 {
   font-weight: 600;
 }
 
+/* ============================================
+   E. SECTION TITLE SYSTEM - Calmer Visual Weight
+   with Soft Colored Header Backgrounds
+   ============================================ */
 .section-title {
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
   font-weight: 600;
-  color: var(--neutral-900);
+  color: var(--neutral-700);
 }
 
 .section-subtitle {
@@ -739,23 +857,176 @@ h4 {
   color: var(--neutral-500);
   margin-top: 0.25rem;
   font-weight: 400;
+  line-height: 1.5;
 }
 
-/* Card with colored left accent borders */
+/* Section icon colors - desaturated for visual calm */
+.section-title svg {
+  opacity: 0.75;
+}
+
+/* ============================================
+   SECTION HEADER BACKGROUNDS - Soft Colored Blocks
+   ============================================ */
+.wizard-section-header {
+  margin: calc(var(--card-padding) * -1);
+  margin-bottom: var(--section-header-gap);
+  padding: 1.25rem var(--card-padding);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* Blue Tosca Header - Data Sekolah */
+.card-accent-blue .wizard-section-header {
+  background: linear-gradient(135deg, hsl(185, 40%, 94%) 0%, hsl(185, 35%, 97%) 100%);
+  border-bottom: 1px solid hsl(185, 30%, 88%);
+}
+
+/* Green Tosca Header - Data Kurikulum */
+.card-accent-green .wizard-section-header {
+  background: linear-gradient(135deg, hsl(168, 38%, 93%) 0%, hsl(168, 32%, 96%) 100%);
+  border-bottom: 1px solid hsl(168, 28%, 86%);
+}
+
+/* Orange Peach Header - Pengaturan Pertemuan */
+.card-accent-orange .wizard-section-header {
+  background: linear-gradient(135deg, hsl(28, 50%, 94%) 0%, hsl(28, 45%, 97%) 100%);
+  border-bottom: 1px solid hsl(28, 40%, 88%);
+}
+
+/* Purple Lavender Header - Materi Pembelajaran */
+.card-accent-purple .wizard-section-header {
+  background: linear-gradient(135deg, hsl(270, 35%, 94%) 0%, hsl(270, 30%, 97%) 100%);
+  border-bottom: 1px solid hsl(270, 25%, 88%);
+}
+
+/* ============================================
+   G. SECTION CARD ACCENTS - Soft Tosca Palette
+   Pastel backgrounds + left border for visual separation
+   ============================================ */
 .card-accent-blue {
-  border-left: 4px solid var(--primary-500);
+  background: linear-gradient(135deg, var(--section-blue-bg) 0%, white 100%);
+  border-left: 4px solid var(--section-blue-border);
+  border-color: hsl(185, 25%, 88%);
+}
+
+.card-accent-blue:hover {
+  border-left-color: var(--section-blue-accent);
 }
 
 .card-accent-green {
-  border-left: 4px solid var(--success-500);
+  background: linear-gradient(135deg, var(--section-green-bg) 0%, white 100%);
+  border-left: 4px solid var(--section-green-border);
+  border-color: hsl(168, 22%, 87%);
+}
+
+.card-accent-green:hover {
+  border-left-color: var(--section-green-accent);
 }
 
 .card-accent-orange {
-  border-left: 4px solid var(--accent-500);
+  background: linear-gradient(135deg, var(--section-orange-bg) 0%, white 100%);
+  border-left: 4px solid var(--section-orange-border);
+  border-color: hsl(28, 30%, 88%);
+}
+
+.card-accent-orange:hover {
+  border-left-color: var(--section-orange-accent);
 }
 
 .card-accent-purple {
-  border-left: 4px solid #8b5cf6;
+  background: linear-gradient(135deg, var(--section-purple-bg) 0%, white 100%);
+  border-left: 4px solid var(--section-purple-border);
+  border-color: hsl(270, 20%, 88%);
+}
+
+.card-accent-purple:hover {
+  border-left-color: var(--section-purple-accent);
+}
+
+/* ============================================
+   F. WIZARD FORM SPACING SYSTEM
+   ============================================ */
+.wizard-form-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+.wizard-card {
+  padding: var(--card-padding);
+}
+
+@media (min-width: 640px) {
+  .wizard-card {
+    padding: calc(var(--card-padding) + 0.5rem);
+  }
+}
+
+.wizard-section-header {
+  margin-bottom: var(--section-header-gap);
+}
+
+.wizard-section-header .section-title {
+  margin-bottom: 0.25rem;
+}
+
+.wizard-form-grid {
+  display: grid;
+  gap: var(--inner-group-gap);
+  align-items: end;
+  /* Align inputs at bottom for consistent baseline */
+}
+
+/* Form field wrapper - ensures label + input stack properly */
+.wizard-form-grid>div {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Keep label at top, input at bottom */
+.wizard-form-grid>div>.label {
+  flex-shrink: 0;
+  min-height: 2.5rem;
+  /* Reserve minimum space for labels */
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 0.25rem;
+}
+
+.wizard-form-grid-2 {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .wizard-form-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.wizard-form-grid-4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 640px) {
+  .wizard-form-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.wizard-form-grid-3 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 640px) {
+  .wizard-form-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.wizard-input-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--inner-group-gap);
 }
 
 /* ============================================

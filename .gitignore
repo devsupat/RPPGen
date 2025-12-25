@@ -1,4 +1,17 @@
+# ========================
+# SECURITY: Never commit secrets!
+# ========================
+.env
+.env.*
+!env.example
+*.pem
+*.key
+secrets/
+credentials/
+
+# ========================
 # Logs
+# ========================
 logs
 *.log
 npm-debug.log*

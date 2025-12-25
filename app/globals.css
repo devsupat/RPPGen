@@ -264,6 +264,12 @@ h4 {
   transition: all 0.2s ease;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    scroll-behavior: smooth;
+  }
+}
+
 .input:hover {
   border-color: var(--neutral-300);
 }
@@ -292,9 +298,19 @@ h4 {
   padding-right: 3rem;
 }
 
+/* Strict spacing system for teacher comfort */
+.label {
+  line-height: 1.75 !important;
+}
+
+.input {
+  line-height: 1.75 !important;
+}
+
 .form-group {
   margin-bottom: 1.5rem;
 }
+
 
 .form-hint {
   font-size: 0.8125rem;
@@ -696,6 +712,50 @@ h4 {
   border-top-color: currentColor;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+
+/* ============================================
+   Enhanced Readability for Teachers (Age 25-55)
+   ============================================ */
+.input-comfortable {
+  padding: 1rem 1.125rem;
+  font-size: 1rem;
+}
+
+.label-comfortable {
+  font-size: 0.9375rem;
+  margin-bottom: 0.625rem;
+  font-weight: 600;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--neutral-900);
+}
+
+.section-subtitle {
+  font-size: 0.8125rem;
+  color: var(--neutral-500);
+  margin-top: 0.25rem;
+  font-weight: 400;
+}
+
+/* Card with colored left accent borders */
+.card-accent-blue {
+  border-left: 4px solid var(--primary-500);
+}
+
+.card-accent-green {
+  border-left: 4px solid var(--success-500);
+}
+
+.card-accent-orange {
+  border-left: 4px solid var(--accent-500);
+}
+
+.card-accent-purple {
+  border-left: 4px solid #8b5cf6;
 }
 
 /* ============================================

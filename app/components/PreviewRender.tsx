@@ -69,7 +69,7 @@ export default function PreviewRender({ rppm, onBack }: PreviewRenderProps) {
                     id="rppm-document"
                     className="relative bg-white p-8 sm:p-12 md:p-16 rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden"
                 >
-                    {/* FIXED: Comprehensive table and layout styles */}
+                    {/* FIXED: Match DOCX table styling exactly */}
                     <style dangerouslySetInnerHTML={{
                         __html: `
                         /* ===== BASE CONTAINER ===== */
@@ -78,38 +78,39 @@ export default function PreviewRender({ rppm, onBack }: PreviewRenderProps) {
                             color: #1a1a1a;
                             line-height: 1.8;
                             max-width: 100%;
-                            overflow-x: hidden; /* CRITICAL: Prevent horizontal overflow */
+                            overflow-x: hidden;
                         }
                         
                         #rppm-document .html-content {
                             max-width: 100%;
-                            overflow-x: auto; /* Allow scroll if absolutely needed */
+                            overflow-x: auto;
                         }
                         
                         /* ===== HEADINGS ===== */
                         #rppm-document h1 {
-                            font-size: 20pt;
+                            font-size: 18pt;
                             color: #000;
                             text-align: center;
-                            margin-bottom: 16pt;
+                            margin-bottom: 18pt;
                             font-weight: bold;
+                            letter-spacing: 0.5pt;
                         }
                         
                         #rppm-document h2 {
                             font-size: 14pt;
                             color: #000;
                             font-weight: bold;
-                            margin-top: 28pt;
-                            margin-bottom: 14pt;
-                            padding-bottom: 8pt;
+                            margin-top: 30pt;
+                            margin-bottom: 16pt;
+                            padding-bottom: 10pt;
                             border-bottom: 2pt solid #000;
                         }
                         
                         #rppm-document h3 {
                             font-size: 12pt;
                             font-weight: bold;
-                            margin-top: 20pt;
-                            margin-bottom: 10pt;
+                            margin-top: 22pt;
+                            margin-bottom: 12pt;
                         }
                         
                         #rppm-document p, 
@@ -118,14 +119,14 @@ export default function PreviewRender({ rppm, onBack }: PreviewRenderProps) {
                             margin-bottom: 8pt;
                         }
                         
-                        /* ===== TABLES - RESPONSIVE FIX ===== */
+                        /* ===== TABLES - MATCH DOCX EXACTLY ===== */
                         #rppm-document table {
-                            width: 100% !important; /* CRITICAL: Force 100% width */
+                            width: 100% !important;
                             max-width: 100% !important;
                             border-collapse: collapse;
-                            margin: 12pt 0 16pt 0;
-                            table-layout: fixed !important; /* CRITICAL: Fixed layout prevents overflow */
-                            word-wrap: break-word; /* Wrap long words */
+                            margin: 14pt 0 18pt 0;
+                            table-layout: fixed !important;
+                            word-wrap: break-word;
                             overflow-wrap: break-word;
                         }
                         
@@ -134,26 +135,107 @@ export default function PreviewRender({ rppm, onBack }: PreviewRenderProps) {
                             border: 1px solid #000;
                             padding: 8pt;
                             vertical-align: top;
-                            font-size: 10pt;
+                            font-size: 10.5pt;
+                            line-height: 1.3;
                             word-wrap: break-word;
                             overflow-wrap: break-word;
+                            white-space: normal;
                             hyphens: auto;
                         }
                         
                         #rppm-document table th {
-                            background-color: #fef9c3;
+                            background-color: #f5f5f5;
                             font-weight: bold;
                             text-align: center;
                         }
                         
-                        /* Remove any inline width styles from tables */
-                        #rppm-document table[style*="width"] {
-                            width: 100% !important;
+                        /* ===== AUTOMATIC COLUMN WIDTH - MATCH DOCX ===== */
+                        /* 2 columns: 50% each */
+                        #rppm-document table tr td:first-child:nth-last-child(2),
+                        #rppm-document table tr td:first-child:nth-last-child(2) ~ td,
+                        #rppm-document table tr th:first-child:nth-last-child(2),
+                        #rppm-document table tr th:first-child:nth-last-child(2) ~ th {
+                            width: 50% !important;
                         }
                         
-                        #rppm-document table td[style*="width"],
-                        #rppm-document table th[style*="width"] {
-                            width: auto !important;
+                        /* 3 columns: 33.33% each */
+                        #rppm-document table tr td:first-child:nth-last-child(3),
+                        #rppm-document table tr td:first-child:nth-last-child(3) ~ td,
+                        #rppm-document table tr th:first-child:nth-last-child(3),
+                        #rppm-document table tr th:first-child:nth-last-child(3) ~ th {
+                            width: 33.33% !important;
+                        }
+                        
+                        /* 4 columns: 25% each */
+                        #rppm-document table tr td:first-child:nth-last-child(4),
+                        #rppm-document table tr td:first-child:nth-last-child(4) ~ td,
+                        #rppm-document table tr th:first-child:nth-last-child(4),
+                        #rppm-document table tr th:first-child:nth-last-child(4) ~ th {
+                            width: 25% !important;
+                        }
+                        
+                        /* 5 columns: 20% each */
+                        #rppm-document table tr td:first-child:nth-last-child(5),
+                        #rppm-document table tr td:first-child:nth-last-child(5) ~ td,
+                        #rppm-document table tr th:first-child:nth-last-child(5),
+                        #rppm-document table tr th:first-child:nth-last-child(5) ~ th {
+                            width: 20% !important;
+                        }
+                        
+                        /* 6 columns: 16.66% each */
+                        #rppm-document table tr td:first-child:nth-last-child(6),
+                        #rppm-document table tr td:first-child:nth-last-child(6) ~ td,
+                        #rppm-document table tr th:first-child:nth-last-child(6),
+                        #rppm-document table tr th:first-child:nth-last-child(6) ~ th {
+                            width: 16.66% !important;
+                        }
+                        
+                        /* 7 columns: 14.28% each */
+                        #rppm-document table tr td:first-child:nth-last-child(7),
+                        #rppm-document table tr td:first-child:nth-last-child(7) ~ td,
+                        #rppm-document table tr th:first-child:nth-last-child(7),
+                        #rppm-document table tr th:first-child:nth-last-child(7) ~ th {
+                            width: 14.28% !important;
+                        }
+                        
+                        /* 8 columns: 12.5% each */
+                        #rppm-document table tr td:first-child:nth-last-child(8),
+                        #rppm-document table tr td:first-child:nth-last-child(8) ~ td,
+                        #rppm-document table tr th:first-child:nth-last-child(8),
+                        #rppm-document table tr th:first-child:nth-last-child(8) ~ th {
+                            width: 12.5% !important;
+                        }
+                        
+                        /* 9 columns: 11.11% each */
+                        #rppm-document table tr td:first-child:nth-last-child(9),
+                        #rppm-document table tr td:first-child:nth-last-child(9) ~ td,
+                        #rppm-document table tr th:first-child:nth-last-child(9),
+                        #rppm-document table tr th:first-child:nth-last-child(9) ~ th {
+                            width: 11.11% !important;
+                        }
+                        
+                        /* 10 columns: 10% each */
+                        #rppm-document table tr td:first-child:nth-last-child(10),
+                        #rppm-document table tr td:first-child:nth-last-child(10) ~ td,
+                        #rppm-document table tr th:first-child:nth-last-child(10),
+                        #rppm-document table tr th:first-child:nth-last-child(10) ~ th {
+                            width: 10% !important;
+                        }
+                        
+                        /* 11 columns: 9.09% each */
+                        #rppm-document table tr td:first-child:nth-last-child(11),
+                        #rppm-document table tr td:first-child:nth-last-child(11) ~ td,
+                        #rppm-document table tr th:first-child:nth-last-child(11),
+                        #rppm-document table tr th:first-child:nth-last-child(11) ~ th {
+                            width: 9.09% !important;
+                        }
+                        
+                        /* 12 columns: 8.33% each */
+                        #rppm-document table tr td:first-child:nth-last-child(12),
+                        #rppm-document table tr td:first-child:nth-last-child(12) ~ td,
+                        #rppm-document table tr th:first-child:nth-last-child(12),
+                        #rppm-document table tr th:first-child:nth-last-child(12) ~ th {
+                            width: 8.33% !important;
                         }
                         
                         /* ===== BLOCKQUOTES ===== */
@@ -179,14 +261,15 @@ export default function PreviewRender({ rppm, onBack }: PreviewRenderProps) {
                         
                         /* ===== SIGNATURE BLOCK ===== */
                         #rppm-document table:last-of-type {
-                            margin-top: 40pt;
+                            margin-top: 60pt;
                         }
                         
                         #rppm-document table:last-of-type td {
                             border: none !important;
-                            padding: 16pt;
+                            padding: 24pt 20pt !important;
                             text-align: center;
-                            line-height: 2;
+                            line-height: 2.4;
+                            width: 50% !important;
                         }
                     `}} />
 

@@ -10,11 +10,13 @@ import {
     getPhaseLabel
 } from '@/data/cp_registry';
 import type { RPPMInput, IdentityInput, CurriculumInput, PhaseName } from '@/types';
+import { getStoredApiKey } from './ApiSettingsPanel';
 
 interface WizardFormProps {
     userSekolah?: string;
     userName?: string;
     onGenerate: (rppm: any) => void;
+    onRateLimitError?: () => void;
 }
 
 const MODEL_PEMBELAJARAN = [
@@ -35,7 +37,7 @@ const ALOKASI_WAKTU = [
     '3 x 45 menit',
 ];
 
-export default function WizardForm({ userSekolah, userName, onGenerate }: WizardFormProps) {
+export default function WizardForm({ userSekolah, userName, onGenerate, onRateLimitError }: WizardFormProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -139,16 +141,29 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                 },
             };
 
+            // Get user API key from localStorage if available
+            const userApiKey = getStoredApiKey();
+
             const response = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(input),
+                body: JSON.stringify({
+                    ...input,
+                    userApiKey: userApiKey || undefined // Include user API key if available
+                }),
             });
 
             const data = await response.json();
 
             if (data.success) {
                 onGenerate(data.rppm);
+            } else if (data.error === 'API_RATE_LIMIT' || response.status === 429) {
+                // Rate limit error - trigger modal
+                if (onRateLimitError) {
+                    onRateLimitError();
+                } else {
+                    setError('Batas pemakaian API tercapai. Silakan coba lagi nanti.');
+                }
             } else {
                 setError(data.error || 'Gagal menghasilkan RPPM');
             }
@@ -162,13 +177,13 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
     const jenjangOptions = getJenjangOptions();
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
             {/* LEFT PANEL - Form Input (2/3 width) */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-3 space-y-16">
                 {/* Header */}
-                <div className="card p-5">
+                <div className="card p-10 sm:p-12">
                     <h2 className="text-xl font-bold text-gray-900">Generator RPPM Deep Learning</h2>
-                    <p className="text-sm text-gray-500">Kurikulum Merdeka · SK 046/2025</p>
+                    <p className="text-sm text-gray-500 mt-1">Kurikulum Merdeka · SK 046/2025</p>
                 </div>
 
                 {/* Error */}
@@ -179,12 +194,15 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                 )}
 
                 {/* Data Sekolah */}
-                <div className="card p-5">
-                    <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-blue-500" />
-                        Data Sekolah & Guru
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="card card-accent-blue p-10 sm:p-12">
+                    <div className="mb-8">
+                        <h3 className="section-title flex items-center gap-2">
+                            <BookOpen className="w-5 h-5 text-blue-500" />
+                            Data Sekolah & Guru
+                        </h3>
+                        <p className="section-subtitle">Informasi identitas sekolah dan penyusun RPPM</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                         <div className="sm:col-span-2">
                             <label className="label label-required">Nama Sekolah</label>
                             <input
@@ -242,7 +260,7 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                                     type="text"
                                     value={kota}
                                     onChange={(e) => setKota(e.target.value)}
-                                    className="input pl-10"
+                                    className="input !pl-11"
                                 />
                                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             </div>
@@ -254,7 +272,7 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                                     type="date"
                                     value={tanggalKeabsahan}
                                     onChange={(e) => setTanggalKeabsahan(e.target.value)}
-                                    className="input pl-10"
+                                    className="input !pl-11"
                                 />
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             </div>
@@ -263,12 +281,15 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                 </div>
 
                 {/* Kurikulum */}
-                <div className="card p-5">
-                    <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <Target className="w-4 h-4 text-green-500" />
-                        Data Kurikulum
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="card card-accent-green p-10 sm:p-12">
+                    <div className="mb-8">
+                        <h3 className="section-title flex items-center gap-2">
+                            <Target className="w-5 h-5 text-green-500" />
+                            Data Kurikulum
+                        </h3>
+                        <p className="section-subtitle">Jenjang, kelas, fase, dan mata pelajaran</p>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
                         <div>
                             <label className="label label-required">Jenjang</label>
                             <select
@@ -338,12 +359,15 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                 </div>
 
                 {/* Pengaturan Pertemuan */}
-                <div className="card p-5">
-                    <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-orange-500" />
-                        Pengaturan Pertemuan
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="card card-accent-orange p-10 sm:p-12">
+                    <div className="mb-8">
+                        <h3 className="section-title flex items-center gap-2">
+                            <Clock className="w-5 h-5 text-orange-500" />
+                            Pengaturan Pertemuan
+                        </h3>
+                        <p className="section-subtitle">Alokasi waktu dan model pembelajaran</p>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
                         <div>
                             <label className="label label-required">Alokasi Waktu</label>
                             <select
@@ -384,12 +408,15 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
                 </div>
 
                 {/* Materi */}
-                <div className="card p-5">
-                    <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-purple-500" />
-                        Materi Pembelajaran
-                    </h3>
-                    <div className="space-y-4">
+                <div className="card card-accent-purple p-10 sm:p-12">
+                    <div className="mb-8">
+                        <h3 className="section-title flex items-center gap-2">
+                            <FileText className="w-5 h-5 text-purple-500" />
+                            Materi Pembelajaran
+                        </h3>
+                        <p className="section-subtitle">Topik, detail materi, dan kondisi awal murid</p>
+                    </div>
+                    <div className="space-y-8">
                         <div>
                             <label className="label label-required">Topik Utama</label>
                             <input
@@ -448,10 +475,10 @@ export default function WizardForm({ userSekolah, userName, onGenerate }: Wizard
             </div>
 
             {/* RIGHT PANEL - Preview Info (1/3 width) */}
-            <div className="hidden lg:block">
-                <div className="card p-6 sticky top-24">
-                    <h3 className="font-semibold text-gray-800 mb-5 flex items-center gap-2">
-                        <Settings className="w-4 h-4 text-gray-500" />
+            <div className="hidden lg:block lg:col-span-2">
+                <div className="card p-10 sm:p-12 sticky top-24 shadow-sm ml-4">
+                    <h3 className="section-title mb-6 flex items-center gap-2">
+                        <Settings className="w-5 h-5 text-gray-500" />
                         Preview Pengaturan
                     </h3>
 

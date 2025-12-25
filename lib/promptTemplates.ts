@@ -230,16 +230,17 @@ STRUKTUR DOKUMEN YANG WAJIB DIIKUTI (LENGKAP):
 </table>
 
 <h3>F. Sumber Belajar Tambahan</h3>
+<p><strong>PERHATIAN:</strong> Sumber belajar harus RELEVAN dengan materi atau ditulis: "Ditambahkan guru secara manual"</p>
 <table border="1" style="width:100%; border-collapse: collapse;">
   <tr>
     <th style="padding: 8px; background-color: #fce7f3;">Jenis</th>
     <th style="padding: 8px; background-color: #fce7f3;">Judul/Deskripsi</th>
     <th style="padding: 8px; background-color: #fce7f3;">Link/Sumber</th>
   </tr>
-  <tr><td style="padding: 8px;">Video YouTube</td><td style="padding: 8px;">[Judul video pembelajaran relevan]</td><td style="padding: 8px;">[URL YouTube]</td></tr>
-  <tr><td style="padding: 8px;">Template Canva</td><td style="padding: 8px;">[Deskripsi template untuk presentasi/poster]</td><td style="padding: 8px;">[URL Canva]</td></tr>
-  <tr><td style="padding: 8px;">Artikel/Web</td><td style="padding: 8px;">[Judul artikel pembelajaran]</td><td style="padding: 8px;">[URL Website]</td></tr>
-  <tr><td style="padding: 8px;">Buku Referensi</td><td style="padding: 8px;">[Judul buku dan penerbit]</td><td style="padding: 8px;">[ISBN/Halaman]</td></tr>
+  <tr><td style="padding: 8px;">Video YouTube</td><td style="padding: 8px;">[Judul video yang spesifik tentang materi]</td><td style="padding: 8px;">[URL atau "Ditambahkan guru secara manual"]</td></tr>
+  <tr><td style="padding: 8px;">Template Canva</td><td style="padding: 8px;">[Deskripsi template spesifik]</td><td style="padding: 8px;">[URL atau "Ditambahkan guru secara manual"]</td></tr>
+  <tr><td style="padding: 8px;">Artikel/Web</td><td style="padding: 8px;">[Judul artikel spesifik]</td><td style="padding: 8px;">[URL atau "Ditambahkan guru secara manual"]</td></tr>
+  <tr><td style="padding: 8px;">Buku Referensi</td><td style="padding: 8px;">[Judul buku spesifik dan penerbit]</td><td style="padding: 8px;">[ISBN/Halaman atau "Ditambahkan guru secara manual"]</td></tr>
 </table>
 
 <h2>VI. TANDA TANGAN</h2>
@@ -250,11 +251,16 @@ STRUKTUR DOKUMEN YANG WAJIB DIIKUTI (LENGKAP):
   </tr>
 </table>
 
-PENTING: 
+INSTRUKSI KRITIS - SUMBER BELAJAR:
 1. Output HANYA HTML murni tanpa markdown!
 2. Semua placeholder [...] WAJIB diganti dengan konten aktual sesuai data yang diberikan.
 3. WAJIB menghasilkan SEMUA bagian dari I sampai VI secara LENGKAP.
-4. Untuk Sumber Belajar, berikan rekomendasi video YouTube dan template Canva yang relevan dengan materi.`;
+4. UNTUK SUMBER BELAJAR:
+   a) JANGAN gunakan URL palsu/contoh: example.com, youtube.com/..., https://..., dll
+   b) JIKA Anda tahu URL spesifik yang RELEVAN dengan materi, gunakan itu
+   c) JIKA TIDAK yakin URL-nya benar, tulis: "Ditambahkan guru secara manual"
+   d) Judul/deskripsi HARUS spesifik sesuai materi (misal: "Video Fotosintesis Tumbuhan" bukan "Video YouTube")
+5. VALIDASI: Setiap URL harus relevan dengan mata pelajaran dan topik!`;
 
 export function buildUserPrompt(data: any) {
   const tanggal = data.identity.tanggalKeabsahan
@@ -296,13 +302,28 @@ INSTRUKSI PENTING:
 1. Isi SEMUA bagian dengan konten substansial dan operasional.
 2. Jabarkan langkah-langkah ${data.curriculum.model} secara detail.
 3. Buat 8 Aspek Penilaian yang spesifik untuk materi "${data.curriculum.topikMateri}".
-4. Untuk Sumber Belajar, berikan:
-   - 1 rekomendasi video YouTube yang relevan (judul dan deskripsi)
-   - 1 rekomendasi template Canva yang relevan
-   - 1 artikel/website pembelajaran yang relevan
-5. Buat Lembar Kerja Murid (LKM) dengan 3 kegiatan/soal sesuai materi.
-6. Ganti SEMUA placeholder [...] dengan konten aktual.
-7. WAJIB selesaikan sampai bagian VI. TANDA TANGAN.
+4. Buat Lembar Kerja Murid (LKM) dengan 3 kegiatan/soal sesuai materi.
+5. Ganti SEMUA placeholder [...] dengan konten aktual.
+6. WAJIB selesaikan sampai bagian VI. TANDA TANGAN.
+
+SUMBER BELAJAR - INSTRUKSI KRITIS:
+7. Untuk bagian F. Sumber Belajar Tambahan:
+   a) Judul/Deskripsi HARUS spesifik sesuai: ${data.curriculum.mapel} - ${data.curriculum.topikMateri}
+   b) DILARANG KERAS menggunakan URL palsu atau placeholder:
+      ❌ example.com
+      ❌ youtube.com/... (tanpa URL lengkap)
+      ❌ https://... (tanpa domain nyata)
+      ❌ www.contoh.com
+   c) Jika Anda TIDAK YAKIN URL yang relevan, tulis: "Ditambahkan guru secara manual"
+   d) Jika Anda YAKIN ada sumber relevan, berikan judul spesifik dan domain nyata
+   
+Contoh BENAR untuk Matematika - Aljabar:
+✅ Video: "Dasar-dasar Aljabar SMP" | "Ditambahkan guru secara manual"
+✅ Artikel: "Penjelasan Aljabar untuk Pemula" | "Ditambahkan guru secara manual"
+
+Contoh SALAH:
+❌ Video: "Video pembelajaran" | "https://youtube.com/..."
+❌ Artikel: "Artikel bagus" | "example.com"
 
 PENTING: Kembalikan HTML murni dengan <table border="1"> untuk semua data tabular!`;
 }
@@ -319,6 +340,68 @@ export function parseRPPMResponse(aiResponse: string) {
 
   // Ensure tables have proper styling
   cleaned = cleaned.replace(/<table(?![^>]*border)/gi, '<table border="1" style="width:100%; border-collapse: collapse;"');
+
+  // ===== URL VALIDATION LAYER =====
+  // Detect and replace dummy/placeholder URLs in learning resources
+  const dummyDomains = [
+    'example.com',
+    'contoh.com',
+    'youtube.com/...',
+    'canva.com/...',
+    'www.example',
+    'http://...',
+    'https://...',
+    '[URL',
+    '[url',
+    'placeholder',
+  ];
+
+  // Pattern to find Sumber Belajar table cells with URLs
+  const urlPattern = /<td style="padding: 8px;">(.+?)<\/td>/gi;
+
+  cleaned = cleaned.replace(urlPattern, (match, content) => {
+    // Check if this is likely a URL cell (contains http, www, or suspicious patterns)
+    const lowerContent = content.toLowerCase();
+
+    // Check for dummy domains
+    const hasDummyDomain = dummyDomains.some(dummy =>
+      lowerContent.includes(dummy.toLowerCase())
+    );
+
+    // Check for incomplete URLs (just https:// or www. without proper domain)
+    const hasIncompleteUrl = (
+      (lowerContent.includes('http://') || lowerContent.includes('https://')) &&
+      (lowerContent.includes('...') || lowerContent.length < 20)
+    ) || (
+        lowerContent.startsWith('www.') && lowerContent.length < 15
+      );
+
+    // If dummy or incomplete, replace with manual entry message
+    if (hasDummyDomain || hasIncompleteUrl) {
+      return '<td style="padding: 8px;">Ditambahkan guru secara manual</td>';
+    }
+
+    return match;
+  });
+
+  // Additional cleanup: Replace remaining placeholder patterns in the learning resources section
+  if (cleaned.includes('F. Sumber Belajar Tambahan')) {
+    // Extract the Sumber Belajar section
+    const sumberBelajarMatch = cleaned.match(/(F\. Sumber Belajar Tambahan[\s\S]*?)<h2>/);
+    if (sumberBelajarMatch) {
+      let sumberSection = sumberBelajarMatch[1];
+
+      // Replace suspicious patterns
+      sumberSection = sumberSection
+        .replace(/\[URL[^\]]*\]/gi, 'Ditambahkan guru secara manual')
+        .replace(/\[url[^\]]*\]/gi, 'Ditambahkan guru secara manual')
+        .replace(/https?:\/\/\.{3,}/gi, 'Ditambahkan guru secara manual')
+        .replace(/www\.\.{3,}/gi, 'Ditambahkan guru secara manual');
+
+      // Replace back in the full content
+      cleaned = cleaned.replace(sumberBelajarMatch[1], sumberSection);
+    }
+  }
 
   return {
     fullHtml: cleaned,

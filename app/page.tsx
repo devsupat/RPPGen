@@ -5,6 +5,8 @@ import LoginForm from './components/LoginForm';
 import WizardForm from './components/WizardForm';
 import PreviewRender from './components/PreviewRender';
 import ExportButtons from './components/ExportButtons';
+import ApiLimitModal from './components/ApiLimitModal';
+import ApiSettingsPanel from './components/ApiSettingsPanel';
 
 interface User {
   kodeAkses: string;
@@ -19,6 +21,10 @@ export default function Home() {
   const [appState, setAppState] = useState<AppState>('login');
   const [user, setUser] = useState<User | null>(null);
   const [generatedRPPM, setGeneratedRPPM] = useState<Record<string, unknown> | null>(null);
+
+  // API Settings modals
+  const [showApiLimitModal, setShowApiLimitModal] = useState(false);
+  const [showApiSettings, setShowApiSettings] = useState(false);
 
   const handleLoginSuccess = (userData: User) => {
     setUser(userData);
@@ -39,6 +45,22 @@ export default function Home() {
     setAppState('login');
     setUser(null);
     setGeneratedRPPM(null);
+  };
+
+  // Handle rate limit error from WizardForm
+  const handleRateLimitError = () => {
+    setShowApiLimitModal(true);
+  };
+
+  // Open settings panel from modal
+  const handleOpenSettings = () => {
+    setShowApiSettings(true);
+  };
+
+  // After saving API key, close settings
+  const handleApiKeySaved = () => {
+    setShowApiSettings(false);
+    // User can now retry generation with their personal API key
   };
 
   return (
@@ -83,6 +105,7 @@ export default function Home() {
                 userSekolah={user?.sekolah}
                 userName={user?.nama}
                 onGenerate={handleGenerate}
+                onRateLimitError={handleRateLimitError}
               />
             </div>
           </div>
@@ -109,6 +132,21 @@ export default function Home() {
           </p>
         </footer>
       )}
+
+      {/* API Limit Modal */}
+      <ApiLimitModal
+        isOpen={showApiLimitModal}
+        onClose={() => setShowApiLimitModal(false)}
+        onOpenSettings={handleOpenSettings}
+      />
+
+      {/* API Settings Panel */}
+      <ApiSettingsPanel
+        isOpen={showApiSettings}
+        onClose={() => setShowApiSettings(false)}
+        onSave={handleApiKeySaved}
+      />
     </div>
   );
 }
+

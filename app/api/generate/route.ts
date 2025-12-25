@@ -3,7 +3,7 @@
 // Standard: Kemendikdasmen SK 046/2025
 
 import { NextRequest, NextResponse } from 'next/server';
-import { generateCompletion, isGroqConfigured } from '@/lib/groq';
+import { generateCompletion, isGroqConfigured, isRateLimitError } from '@/lib/groq';
 import { SYSTEM_PROMPT, buildUserPrompt, parseRPPMResponse } from '@/lib/promptTemplates';
 import { getCPTextForPrompt, getPhaseByClass } from '@/data/cp_registry';
 import { trackEvent } from '@/lib/metrics';
@@ -12,7 +12,10 @@ import type { RPPMInput } from '@/types';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const input = body as RPPMInput;
+        const input = body as RPPMInput & { userApiKey?: string };
+
+        // Extract user API key (sent from client localStorage, never logged)
+        const userApiKey = body.userApiKey;
 
         if (!input.identity || !input.curriculum) {
             return NextResponse.json({ success: false, error: 'Data tidak lengkap' }, { status: 400 });
@@ -27,7 +30,8 @@ export async function POST(request: NextRequest) {
             curriculum: { ...input.curriculum, fase: fase || 'fase_A' }
         };
 
-        if (!isGroqConfigured()) {
+        // If no API key available at all, return demo content
+        if (!isGroqConfigured() && !userApiKey) {
             console.warn('⚠️ Groq API not configured. Returning professional demo content.');
             trackEvent('rppm_generated');
             return NextResponse.json({
@@ -41,15 +45,31 @@ export async function POST(request: NextRequest) {
         }
 
         const userPrompt = buildUserPrompt(enrichedInput);
-        const aiResponse = await generateCompletion(SYSTEM_PROMPT, userPrompt);
-        const rppmData = parseRPPMResponse(aiResponse);
 
-        if (!rppmData) {
-            return NextResponse.json({ success: false, error: 'Gagal memproses respons AI' }, { status: 500 });
+        try {
+            const aiResponse = await generateCompletion(SYSTEM_PROMPT, userPrompt, {
+                userApiKey: userApiKey // Pass user API key if provided
+            });
+            const rppmData = parseRPPMResponse(aiResponse);
+
+            if (!rppmData) {
+                return NextResponse.json({ success: false, error: 'Gagal memproses respons AI' }, { status: 500 });
+            }
+
+            trackEvent('rppm_generated');
+            return NextResponse.json({ success: true, rppm: rppmData });
+
+        } catch (genError) {
+            // Check if this is a rate limit error
+            if (isRateLimitError(genError) || (genError instanceof Error && genError.message === 'API_RATE_LIMIT')) {
+                return NextResponse.json({
+                    success: false,
+                    error: 'API_RATE_LIMIT',
+                    message: 'Batas pemakaian API tercapai. Silakan gunakan API key pribadi.'
+                }, { status: 429 });
+            }
+            throw genError; // Re-throw for general error handling
         }
-
-        trackEvent('rppm_generated');
-        return NextResponse.json({ success: true, rppm: rppmData });
 
     } catch (error) {
         console.error('Generate API error:', error);

@@ -7,9 +7,40 @@ import { generateCompletion, isGroqConfigured, isRateLimitError } from '@/lib/gr
 import { SYSTEM_PROMPT, buildUserPrompt, parseRPPMResponse } from '@/lib/promptTemplates';
 import { getCPTextForPrompt, getPhaseByClass } from '@/data/cp_registry';
 import { trackEvent } from '@/lib/metrics';
+import { getClientIP, isOwner, checkRateLimit, checkDailyQuota, withTimeout, isTimeoutError } from '@/lib/apiGate';
 import type { RPPMInput } from '@/types';
 
 export async function POST(request: NextRequest) {
+    // ========================================================================
+    // API GATE PROTECTION LAYER START
+    // ========================================================================
+    const clientIP = getClientIP(request);
+    const ownerBypass = isOwner(request);
+
+    // Skip all protections for owner
+    if (!ownerBypass) {
+        // Rate limit check: 30 requests per minute per IP
+        const rateCheck = checkRateLimit(clientIP);
+        if (!rateCheck.allowed) {
+            return NextResponse.json(
+                { success: false, error: 'Rate limit exceeded. Coba lagi nanti.' },
+                { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfter || 60) } }
+            );
+        }
+
+        // Daily quota check: 300 requests per day per IP
+        const quotaCheck = checkDailyQuota(clientIP);
+        if (!quotaCheck.allowed) {
+            return NextResponse.json(
+                { success: false, error: 'Daily quota exceeded. Kuota harian habis.' },
+                { status: 403 }
+            );
+        }
+    }
+    // ========================================================================
+    // API GATE PROTECTION LAYER END
+    // ========================================================================
+
     try {
         const body = await request.json();
         const input = body as RPPMInput & { userApiKey?: string };
@@ -47,9 +78,11 @@ export async function POST(request: NextRequest) {
         const userPrompt = buildUserPrompt(enrichedInput);
 
         try {
-            const aiResponse = await generateCompletion(SYSTEM_PROMPT, userPrompt, {
+            // Wrap with timeout protection for non-owners (25s max)
+            const groqCall = generateCompletion(SYSTEM_PROMPT, userPrompt, {
                 userApiKey: userApiKey // Pass user API key if provided
             });
+            const aiResponse = ownerBypass ? await groqCall : await withTimeout(groqCall);
             const rppmData = parseRPPMResponse(aiResponse);
 
             if (!rppmData) {
@@ -60,7 +93,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: true, rppm: rppmData });
 
         } catch (genError) {
-            // Check if this is a rate limit error
+            // Check if this is a timeout error (504 Gateway Timeout)
+            if (isTimeoutError(genError)) {
+                return NextResponse.json({
+                    success: false,
+                    error: 'GATEWAY_TIMEOUT',
+                    message: 'Request timeout. Server terlalu lama merespons.'
+                }, { status: 504 });
+            }
+            // Check if this is a rate limit error from Groq
             if (isRateLimitError(genError) || (genError instanceof Error && genError.message === 'API_RATE_LIMIT')) {
                 return NextResponse.json({
                     success: false,

@@ -23,10 +23,10 @@ function getGroqClient(): Groq {
 export const AI_MODEL_PRIMARY = 'llama-3.3-70b-versatile';
 export const AI_MODEL_FALLBACK = 'llama-3.1-8b-instant';
 
-// Generation settings
+// Generation settings - INCREASED for complete RPPM document
 export const GENERATION_CONFIG = {
     temperature: 0.7,
-    max_tokens: 4096,
+    max_tokens: 16384, // Increased from 4096 to generate complete rubrik tables
     top_p: 0.9,
 };
 

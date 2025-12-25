@@ -27,7 +27,8 @@ export default function PreviewRender({ rppm, onBack }: PreviewRenderProps) {
     }
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        // FIXED: Wider container (max-w-6xl = 1152px) and centered
+        <div className="max-w-6xl mx-auto px-4 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Action Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-4 rounded-3xl border border-white shadow-lg sticky top-6 z-10">
                 <button
@@ -52,67 +53,140 @@ export default function PreviewRender({ rppm, onBack }: PreviewRenderProps) {
                     <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
-                    <p className="text-amber-900 font-bold text-sm">PENTING: Jangan Refesh Halaman!</p>
+                    <p className="text-amber-900 font-bold text-sm">PENTING: Jangan Refresh Halaman!</p>
                     <p className="text-amber-800 text-sm opacity-80">
                         Data ini TIDAK disimpan di server kami demi keamanan privasi Anda. Silakan ekspor ke DOCX atau PDF sekarang juga agar tidak hilang.
                     </p>
                 </div>
             </div>
 
-            {/* Document Container */}
+            {/* Document Container - FIXED: Proper overflow control */}
             <div className="relative group">
                 {/* Decorative gradients */}
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-100 to-purple-100 rounded-[2.5rem] blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
 
                 <div
                     id="rppm-document"
-                    className="relative bg-white p-12 sm:p-20 rounded-[2.5rem] shadow-2xl border border-gray-100 prose prose-slate max-w-none prose-headings:font-serif prose-p:font-serif prose-td:font-serif prose-th:font-serif"
+                    className="relative bg-white p-8 sm:p-12 md:p-16 rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden"
                 >
-                    {/* Inject AI HTML with custom document styles */}
+                    {/* FIXED: Comprehensive table and layout styles */}
                     <style dangerouslySetInnerHTML={{
                         __html: `
+                        /* ===== BASE CONTAINER ===== */
                         #rppm-document {
                             font-family: 'Times New Roman', Times, serif;
                             color: #1a1a1a;
-                            line-height: 1.6;
+                            line-height: 1.8;
+                            max-width: 100%;
+                            overflow-x: hidden; /* CRITICAL: Prevent horizontal overflow */
                         }
+                        
+                        #rppm-document .html-content {
+                            max-width: 100%;
+                            overflow-x: auto; /* Allow scroll if absolutely needed */
+                        }
+                        
+                        /* ===== HEADINGS ===== */
                         #rppm-document h1 {
-                            font-size: 24pt;
+                            font-size: 20pt;
                             color: #000;
                             text-align: center;
-                            margin-bottom: 5pt;
+                            margin-bottom: 16pt;
                             font-weight: bold;
                         }
+                        
                         #rppm-document h2 {
-                            font-size: 18pt;
-                            color: #000;
-                            text-align: center;
-                            margin-top: 0;
-                            margin-bottom: 20pt;
-                            text-transform: uppercase;
-                        }
-                        #rppm-document h3 {
                             font-size: 14pt;
-                            border-bottom: 1.5pt solid #000;
-                            padding-bottom: 4pt;
-                            margin-top: 24pt;
-                            margin-bottom: 12pt;
+                            color: #000;
                             font-weight: bold;
+                            margin-top: 28pt;
+                            margin-bottom: 14pt;
+                            padding-bottom: 8pt;
+                            border-bottom: 2pt solid #000;
                         }
-                        #rppm-document p, #rppm-document li, #rppm-document td {
+                        
+                        #rppm-document h3 {
                             font-size: 12pt;
+                            font-weight: bold;
+                            margin-top: 20pt;
+                            margin-bottom: 10pt;
                         }
+                        
+                        #rppm-document p, 
+                        #rppm-document li {
+                            font-size: 11pt;
+                            margin-bottom: 8pt;
+                        }
+                        
+                        /* ===== TABLES - RESPONSIVE FIX ===== */
                         #rppm-document table {
-                            width: 100%;
+                            width: 100% !important; /* CRITICAL: Force 100% width */
+                            max-width: 100% !important;
                             border-collapse: collapse;
-                            margin-bottom: 15pt;
+                            margin: 12pt 0 16pt 0;
+                            table-layout: fixed !important; /* CRITICAL: Fixed layout prevents overflow */
+                            word-wrap: break-word; /* Wrap long words */
+                            overflow-wrap: break-word;
                         }
-                        #rppm-document table[border="1"] td, #rppm-document table[border="1"] th {
+                        
+                        #rppm-document table td,
+                        #rppm-document table th {
                             border: 1px solid #000;
                             padding: 8pt;
+                            vertical-align: top;
+                            font-size: 10pt;
+                            word-wrap: break-word;
+                            overflow-wrap: break-word;
+                            hyphens: auto;
                         }
-                        #rppm-document .signature-block {
-                            margin-top: 50pt;
+                        
+                        #rppm-document table th {
+                            background-color: #fef9c3;
+                            font-weight: bold;
+                            text-align: center;
+                        }
+                        
+                        /* Remove any inline width styles from tables */
+                        #rppm-document table[style*="width"] {
+                            width: 100% !important;
+                        }
+                        
+                        #rppm-document table td[style*="width"],
+                        #rppm-document table th[style*="width"] {
+                            width: auto !important;
+                        }
+                        
+                        /* ===== BLOCKQUOTES ===== */
+                        #rppm-document blockquote {
+                            border-left: 4pt solid #2563eb;
+                            padding: 12pt 16pt;
+                            margin: 16pt 0;
+                            font-style: italic;
+                            background: #f8fafc;
+                        }
+                        
+                        /* ===== LISTS ===== */
+                        #rppm-document ol, 
+                        #rppm-document ul {
+                            margin-left: 20px;
+                            margin-bottom: 12pt;
+                            padding-left: 8px;
+                        }
+                        
+                        #rppm-document li {
+                            margin-bottom: 6pt;
+                        }
+                        
+                        /* ===== SIGNATURE BLOCK ===== */
+                        #rppm-document table:last-of-type {
+                            margin-top: 40pt;
+                        }
+                        
+                        #rppm-document table:last-of-type td {
+                            border: none !important;
+                            padding: 16pt;
+                            text-align: center;
+                            line-height: 2;
                         }
                     `}} />
 

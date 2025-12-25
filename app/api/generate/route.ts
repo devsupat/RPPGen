@@ -256,12 +256,99 @@ function getDemoHtml(data: any): string {
                 <th style="padding: 8px;">Level</th>
                 <th style="padding: 8px;">Deskripsi Umum</th>
                 <th style="padding: 8px;">Skor</th>
+                <th style="padding: 8px;">Keterangan</th>
             </tr>
-            <tr><td style="padding: 8px;">Prestructural</td><td style="padding: 8px;">Belum memahami tugas dan konteks pembelajaran</td><td style="padding: 8px;">1</td></tr>
-            <tr><td style="padding: 8px;">Unistructural</td><td style="padding: 8px;">Memahami sebagian kecil tugas atau konsep</td><td style="padding: 8px;">2</td></tr>
-            <tr><td style="padding: 8px;">Multistructural</td><td style="padding: 8px;">Memahami beberapa bagian konsep tanpa menghubungkannya</td><td style="padding: 8px;">3</td></tr>
-            <tr><td style="padding: 8px;">Relational</td><td style="padding: 8px;">Mampu mengaitkan ide pokok, memahami konteks dengan tepat</td><td style="padding: 8px;">4</td></tr>
-            <tr><td style="padding: 8px;">Extended Abstract</td><td style="padding: 8px;">Mampu menganalisis dan mengaitkan konsep dengan konteks nyata</td><td style="padding: 8px;">5</td></tr>
+            <tr><td style="padding: 8px;">Prestructural</td><td style="padding: 8px;">Belum memahami tugas dan konteks pembelajaran</td><td style="padding: 8px;">1</td><td style="padding: 8px;">Perlu bimbingan intensif</td></tr>
+            <tr><td style="padding: 8px;">Unistructural</td><td style="padding: 8px;">Memahami sebagian kecil tugas atau konsep</td><td style="padding: 8px;">2</td><td style="padding: 8px;">Pemahaman dasar</td></tr>
+            <tr><td style="padding: 8px;">Multistructural</td><td style="padding: 8px;">Memahami beberapa bagian konsep tanpa menghubungkannya</td><td style="padding: 8px;">3</td><td style="padding: 8px;">Pemahaman berkembang</td></tr>
+            <tr><td style="padding: 8px;">Relational</td><td style="padding: 8px;">Mampu mengaitkan ide pokok, memahami konteks dengan tepat</td><td style="padding: 8px;">4</td><td style="padding: 8px;">Pemahaman mendalam</td></tr>
+            <tr><td style="padding: 8px;">Extended Abstract</td><td style="padding: 8px;">Mampu menganalisis dan mengaitkan konsep dengan konteks nyata</td><td style="padding: 8px;">5</td><td style="padding: 8px;">Pemahaman luar biasa</td></tr>
+        </table>
+
+        <p><strong>Rekap Nilai Murid</strong></p>
+        <table border="1" style="width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 20px;">
+            <tr style="background-color: #fef3c7;">
+                <th style="padding: 8px;">No</th>
+                <th style="padding: 8px;">Nama Murid</th>
+                <th style="padding: 8px;">A1</th>
+                <th style="padding: 8px;">A2</th>
+                <th style="padding: 8px;">A3</th>
+                <th style="padding: 8px;">A4</th>
+                <th style="padding: 8px;">A5</th>
+                <th style="padding: 8px;">A6</th>
+                <th style="padding: 8px;">A7</th>
+                <th style="padding: 8px;">A8</th>
+                <th style="padding: 8px;">Nilai Akhir</th>
+                <th style="padding: 8px;">Ket</th>
+            </tr>
+            <tr><td>1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>5</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        </table>
+        <p><em>Keterangan: A1-A8 = Aspek Penilaian 1-8</em></p>
+
+        <p><strong>Interpretasi Nilai Akhir</strong></p>
+        <table border="1" style="width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 20px;">
+            <tr style="background-color: #dcfce7;">
+                <th style="padding: 8px;">Rentang Nilai</th>
+                <th style="padding: 8px;">Predikat</th>
+                <th style="padding: 8px;">Deskripsi Umum</th>
+            </tr>
+            <tr><td>90 - 100</td><td><strong>SB (Sangat Baik)</strong></td><td style="text-align: left; padding: 8px;">Menguasai seluruh kompetensi dengan sangat baik</td></tr>
+            <tr><td>75 - 89</td><td><strong>B (Baik)</strong></td><td style="text-align: left; padding: 8px;">Menguasai kompetensi dengan baik</td></tr>
+            <tr><td>60 - 74</td><td><strong>C (Cukup)</strong></td><td style="text-align: left; padding: 8px;">Memahami beberapa aspek kompetensi</td></tr>
+            <tr><td>&lt; 60</td><td><strong>PB (Perlu Bimbingan)</strong></td><td style="text-align: left; padding: 8px;">Memerlukan bimbingan tambahan</td></tr>
+        </table>
+
+        <p><strong>D. Evaluasi dan Refleksi Diri Murid</strong></p>
+        <p>Petunjuk: Berilah tanda centang (✓) sesuai kondisimu (Skala 1-4: 1=belum, 4=sudah sangat)</p>
+        <table border="1" style="width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 20px;">
+            <tr style="background-color: #f0fdf4;">
+                <th style="padding: 8px;">No</th>
+                <th style="padding: 8px;">Pertanyaan Refleksi</th>
+                <th style="padding: 8px;">1</th>
+                <th style="padding: 8px;">2</th>
+                <th style="padding: 8px;">3</th>
+                <th style="padding: 8px;">4</th>
+            </tr>
+            <tr><td>1</td><td style="text-align: left; padding: 8px;">Saya memahami tujuan pembelajaran hari ini.</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td></tr>
+            <tr><td>2</td><td style="text-align: left; padding: 8px;">Saya aktif berpartisipasi dalam diskusi kelompok.</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td></tr>
+            <tr><td>3</td><td style="text-align: left; padding: 8px;">Saya dapat menjelaskan konsep materi kepada teman.</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td></tr>
+            <tr><td>4</td><td style="text-align: left; padding: 8px;">Saya mampu menghubungkan materi dengan kehidupan sehari-hari.</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td></tr>
+            <tr><td>5</td><td style="text-align: left; padding: 8px;">Saya merasa tertantang dan bersemangat dalam pembelajaran.</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td></tr>
+        </table>
+
+        <p><strong>E. Catatan Guru</strong></p>
+        <table border="1" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr style="background-color: #fef3c7;"><th style="padding: 8px;">Catatan untuk Tindak Lanjut</th></tr>
+            <tr><td style="padding: 16px; min-height: 80px;"></td></tr>
+        </table>
+
+        <p><strong>F. Lembar Kerja Murid (LKM)</strong></p>
+        <p>Petunjuk Pengerjaan: Kerjakan soal berikut dengan teliti!</p>
+        <table border="1" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr style="background-color: #e0f2fe;">
+                <th style="padding: 8px;">Kegiatan/Soal</th>
+                <th style="padding: 8px;">Ruang Jawaban</th>
+            </tr>
+            <tr><td style="padding: 8px;">1. Jelaskan pengertian ${topik} dengan bahasamu sendiri!</td><td style="padding: 8px; min-height: 60px;"></td></tr>
+            <tr><td style="padding: 8px;">2. Sebutkan 3 contoh penerapan ${topik} dalam kehidupan sehari-hari!</td><td style="padding: 8px; min-height: 60px;"></td></tr>
+            <tr><td style="padding: 8px;">3. Buatlah diagram/peta pikiran tentang ${topik}!</td><td style="padding: 8px; min-height: 80px;"></td></tr>
+        </table>
+
+        <p><strong>G. Sumber Belajar Tambahan</strong></p>
+        <table border="1" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr style="background-color: #fce7f3;">
+                <th style="padding: 8px;">Jenis</th>
+                <th style="padding: 8px;">Judul/Deskripsi</th>
+                <th style="padding: 8px;">Link/Sumber</th>
+            </tr>
+            <tr><td style="padding: 8px;">Video YouTube</td><td style="padding: 8px;">Video pembelajaran ${topik}</td><td style="padding: 8px;">https://youtube.com/...</td></tr>
+            <tr><td style="padding: 8px;">Template Canva</td><td style="padding: 8px;">Template presentasi ${mapel}</td><td style="padding: 8px;">https://canva.com/...</td></tr>
+            <tr><td style="padding: 8px;">Artikel Web</td><td style="padding: 8px;">Artikel pembelajaran ${topik}</td><td style="padding: 8px;">https://...</td></tr>
+            <tr><td style="padding: 8px;">Buku Referensi</td><td style="padding: 8px;">Buku ${mapel} Kelas ${kelas}</td><td style="padding: 8px;">Kemendikbud</td></tr>
         </table>
 
         <div style="margin-top: 80px; width: 100%;">

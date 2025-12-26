@@ -8,7 +8,7 @@ import { generateCompletion, isGroqConfigured, isRateLimitError } from '@/lib/gr
 import { SYSTEM_PROMPT, buildUserPrompt, parseRPPMResponse } from '@/lib/promptTemplates';
 import { getCPTextForPrompt, getPhaseByClass } from '@/data/cp_registry';
 import { trackEvent } from '@/lib/metrics';
-import { getClientIP, isOwner, checkRateLimit, checkDailyQuota, withTimeout, isTimeoutError } from '@/lib/apiGate';
+import { getClientIP, isOwner, checkRateLimit, checkDailyQuota, withTimeout, isTimeoutError, isGateDisabled } from '@/lib/apiGate';
 import type { RPPMInput } from '@/types';
 
 // ============================================================================
@@ -167,6 +167,25 @@ export async function POST(request: NextRequest) {
             cpText: cpText || 'Capaian Pembelajaran tidak ditemukan.',
             curriculum: { ...input.curriculum, fase: fase || 'fase_A' }
         };
+
+        // ====================================================================
+        // DEVELOPMENT MODE: Skip Groq entirely when API_GATE_DISABLED=true
+        // This prevents hitting Groq rate limits during Flutter development
+        // ====================================================================
+        if (isGateDisabled()) {
+            console.log('🔧 [Mobile] Development mode - returning demo content (API_GATE_DISABLED=true)');
+            trackEvent('rppm_generated');
+            return NextResponse.json({
+                success: true,
+                rppm: {
+                    fullHtml: getDemoHtmlMobile(enrichedInput),
+                    generatedAt: new Date().toISOString()
+                },
+                isDemo: true,
+                isDevelopment: true,
+                source: 'mobile'
+            });
+        }
 
         // If no API key available at all, return demo content
         if (!isGroqConfigured()) {

@@ -1,5 +1,5 @@
 /**
- * GuruPintar AI - Professional Prompt Templates
+ * GuruDok AI - Professional Prompt Templates
  * Standard: Kemendikdasmen (Kurikulum Merdeka 2025 - SK 046/2025)
  * Output: PURE HTML ONLY (NO MARKDOWN)
  * Pedagogy: Deep Learning Framework + SOLO Taxonomy

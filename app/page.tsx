@@ -73,7 +73,7 @@ export default function Home() {
               <div className="header-brand">
                 <div className="header-logo">G</div>
                 <div>
-                  <div className="header-title">GuruPintar AI</div>
+                  <div className="header-title">GuruDok AI</div>
                   <div className="header-subtitle">Generator RPPM Deep Learning</div>
                 </div>
               </div>
@@ -128,7 +128,7 @@ export default function Home() {
       {appState === 'login' && (
         <footer className="fixed bottom-0 left-0 right-0 p-4 text-center">
           <p className="text-xs text-gray-400">
-            © 2025 GuruPintar AI · Kurikulum Merdeka · SK 046/2025
+            © 2025 GuruDok AI · Kurikulum Merdeka · SK 046/2025
           </p>
         </footer>
       )}

@@ -1,4 +1,4 @@
-// Types for GuruPintar AI - RPPM Generator
+// Types for GuruDok AI - RPPM Generator
 
 // ============================================
 // CP Registry Types

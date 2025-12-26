@@ -9,7 +9,7 @@ interface DeviceLockedProps {
 export default function DeviceLocked({ onBack }: DeviceLockedProps) {
     const handleRequestReset = () => {
         const email = 'bdrtiksupat@gmail.com';
-        const subject = encodeURIComponent('Permohonan Reset Akun GuruPintar AI');
+        const subject = encodeURIComponent('Permohonan Reset Akun GuruDok AI');
         const body = encodeURIComponent(
             `Halo Admin,
 

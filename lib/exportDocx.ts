@@ -1,13 +1,386 @@
-// DOCX Export Utility - PRODUCTION READY
-// Uses fullHtml with STRICT table width constraints
-// Grade: Professional, layak release
+// Native DOCX Export - Using docx library for true Word documents
+// Approach: HTML → DOMParser → docx objects → .docx
+// Tables are fully editable in Microsoft Word
 
 import { saveAs } from 'file-saver';
+import {
+    Document,
+    Packer,
+    Paragraph,
+    TextRun,
+    Table,
+    TableRow,
+    TableCell,
+    HeadingLevel,
+    AlignmentType,
+    BorderStyle,
+    WidthType,
+    convertInchesToTwip,
+    Footer,
+    PageNumber,
+    NumberFormat,
+    ITableCellOptions,
+    ISectionOptions,
+    TableLayoutType,
+    VerticalAlign,
+} from 'docx';
+
+// =============================================================================
+// HTML PARSER - Convert HTML elements to docx objects
+// =============================================================================
 
 /**
- * Export RPPM to DOCX-compatible format
- * CRITICAL: Tables MUST NOT exceed page width
- * Uses MSO-specific CSS for precise Word control
+ * Parse HTML string and convert to docx Document children
+ */
+function parseHtmlToDocx(html: string): (Paragraph | Table)[] {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
+    const root = doc.body.firstChild as HTMLElement;
+
+    if (!root) return [];
+
+    return parseChildren(root);
+}
+
+/**
+ * Parse child nodes recursively
+ */
+function parseChildren(parent: HTMLElement): (Paragraph | Table)[] {
+    const result: (Paragraph | Table)[] = [];
+
+    for (const node of Array.from(parent.childNodes)) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const text = node.textContent?.trim();
+            if (text) {
+                result.push(new Paragraph({ children: [new TextRun(text)] }));
+            }
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as HTMLElement;
+            const parsed = parseElement(element);
+            if (parsed) {
+                if (Array.isArray(parsed)) {
+                    result.push(...parsed);
+                } else {
+                    result.push(parsed);
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+/**
+ * Parse a single HTML element to docx object(s)
+ */
+function parseElement(element: HTMLElement): Paragraph | Table | (Paragraph | Table)[] | null {
+    const tagName = element.tagName.toLowerCase();
+
+    switch (tagName) {
+        case 'h1':
+            return createHeading(element, HeadingLevel.HEADING_1, true);
+        case 'h2':
+            return createHeading(element, HeadingLevel.HEADING_2, false);
+        case 'h3':
+            return createHeading(element, HeadingLevel.HEADING_3, false);
+        case 'p':
+            return createParagraph(element);
+        case 'table':
+            return createTable(element);
+        case 'ol':
+            return createOrderedList(element);
+        case 'ul':
+            return createUnorderedList(element);
+        case 'blockquote':
+            return createBlockquote(element);
+        case 'hr':
+            return createHorizontalRule();
+        case 'br':
+            return new Paragraph({ children: [] });
+        case 'div':
+        case 'span':
+            return parseChildren(element);
+        default:
+            // For unknown tags, try to extract text content
+            const text = element.textContent?.trim();
+            if (text) {
+                return new Paragraph({ children: [new TextRun(text)] });
+            }
+            return null;
+    }
+}
+
+/**
+ * Create a heading paragraph
+ */
+function createHeading(element: HTMLElement, level: typeof HeadingLevel[keyof typeof HeadingLevel], centered: boolean): Paragraph {
+    const textRuns = extractTextRuns(element);
+
+    return new Paragraph({
+        heading: level,
+        alignment: centered ? AlignmentType.CENTER : AlignmentType.LEFT,
+        spacing: {
+            before: level === HeadingLevel.HEADING_1 ? 0 : 400,
+            after: 200,
+        },
+        children: textRuns,
+    });
+}
+
+/**
+ * Create a regular paragraph
+ */
+function createParagraph(element: HTMLElement): Paragraph {
+    const textRuns = extractTextRuns(element);
+
+    return new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { after: 200 },
+        children: textRuns,
+    });
+}
+
+/**
+ * Extract TextRun objects from element, handling <strong>, <em>, <br>
+ */
+function extractTextRuns(element: HTMLElement): TextRun[] {
+    const runs: TextRun[] = [];
+
+    for (const node of Array.from(element.childNodes)) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const text = node.textContent || '';
+            if (text) {
+                runs.push(new TextRun({ text, font: 'Times New Roman', size: 24 }));
+            }
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            const child = node as HTMLElement;
+            const tag = child.tagName.toLowerCase();
+
+            if (tag === 'strong' || tag === 'b') {
+                runs.push(new TextRun({
+                    text: child.textContent || '',
+                    bold: true,
+                    font: 'Times New Roman',
+                    size: 24,
+                }));
+            } else if (tag === 'em' || tag === 'i') {
+                runs.push(new TextRun({
+                    text: child.textContent || '',
+                    italics: true,
+                    font: 'Times New Roman',
+                    size: 24,
+                }));
+            } else if (tag === 'br') {
+                runs.push(new TextRun({ text: '', break: 1 }));
+            } else {
+                // Recursively extract from other elements
+                runs.push(...extractTextRuns(child));
+            }
+        }
+    }
+
+    return runs;
+}
+
+/**
+ * Create a native Word table (fully editable!)
+ */
+function createTable(tableElement: HTMLElement): Table {
+    const rows: TableRow[] = [];
+    const tableRows = tableElement.querySelectorAll('tr');
+
+    // Determine column count from first row
+    const firstRow = tableRows[0];
+    const colCount = firstRow ? firstRow.querySelectorAll('td, th').length : 1;
+
+    // Calculate equal column widths (100% / colCount)
+    const columnWidth = Math.floor(9000 / colCount); // 9000 twips ≈ page width
+
+    for (const tr of Array.from(tableRows)) {
+        const cells: TableCell[] = [];
+        const cellElements = tr.querySelectorAll('td, th');
+
+        for (const cellElement of Array.from(cellElements)) {
+            const isHeader = cellElement.tagName.toLowerCase() === 'th';
+            const bgColor = extractBackgroundColor(cellElement as HTMLElement);
+
+            const cellOptions: ITableCellOptions = {
+                children: [
+                    new Paragraph({
+                        alignment: isHeader ? AlignmentType.CENTER : AlignmentType.LEFT,
+                        children: extractTextRuns(cellElement as HTMLElement),
+                    }),
+                ],
+                width: { size: columnWidth, type: WidthType.DXA },
+                shading: bgColor ? { fill: bgColor } : undefined,
+                verticalAlign: VerticalAlign.TOP,
+                margins: {
+                    top: convertInchesToTwip(0.05),
+                    bottom: convertInchesToTwip(0.05),
+                    left: convertInchesToTwip(0.08),
+                    right: convertInchesToTwip(0.08),
+                },
+            };
+
+            cells.push(new TableCell(cellOptions));
+        }
+
+        // Ensure we have the right number of cells
+        while (cells.length < colCount) {
+            cells.push(new TableCell({
+                children: [new Paragraph({ children: [] })],
+                width: { size: columnWidth, type: WidthType.DXA },
+            }));
+        }
+
+        rows.push(new TableRow({ children: cells }));
+    }
+
+    // Handle empty table
+    if (rows.length === 0) {
+        rows.push(new TableRow({
+            children: [new TableCell({
+                children: [new Paragraph({ children: [] })],
+                width: { size: 9000, type: WidthType.DXA },
+            })],
+        }));
+    }
+
+    return new Table({
+        rows,
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        layout: TableLayoutType.FIXED,
+        borders: {
+            top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+            bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+            left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+            right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+            insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+            insideVertical: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+        },
+    });
+}
+
+/**
+ * Extract background color from inline styles
+ */
+function extractBackgroundColor(element: HTMLElement): string | undefined {
+    const style = element.getAttribute('style') || '';
+    const bgMatch = style.match(/background-color:\s*(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}|[a-z]+)/i);
+
+    if (bgMatch) {
+        let color = bgMatch[1];
+        // Convert named colors to hex
+        const namedColors: Record<string, string> = {
+            '#f0f9ff': 'F0F9FF',
+            '#ecfdf5': 'ECFDF5',
+            '#fef3c7': 'FEF3C7',
+            '#fce7f3': 'FCE7F3',
+            '#e0e7ff': 'E0E7FF',
+            '#fef9c3': 'FEF9C3',
+            '#dbeafe': 'DBEAFE',
+            '#dcfce7': 'DCFCE7',
+            '#f0fdf4': 'F0FDF4',
+            '#e0f2fe': 'E0F2FE',
+            '#f5f5f5': 'F5F5F5',
+        };
+
+        color = color.toLowerCase();
+        if (namedColors[color]) {
+            return namedColors[color];
+        }
+        if (color.startsWith('#')) {
+            return color.replace('#', '').toUpperCase();
+        }
+    }
+    return undefined;
+}
+
+/**
+ * Create ordered list (1. 2. 3.)
+ */
+function createOrderedList(element: HTMLElement): Paragraph[] {
+    const items = element.querySelectorAll(':scope > li');
+    const paragraphs: Paragraph[] = [];
+
+    let index = 1;
+    for (const li of Array.from(items)) {
+        const textRuns = extractTextRuns(li as HTMLElement);
+        paragraphs.push(new Paragraph({
+            children: [
+                new TextRun({ text: `${index}. `, bold: false, font: 'Times New Roman', size: 24 }),
+                ...textRuns,
+            ],
+            spacing: { after: 100 },
+            indent: { left: convertInchesToTwip(0.25) },
+        }));
+        index++;
+    }
+
+    return paragraphs;
+}
+
+/**
+ * Create unordered list (bullets)
+ */
+function createUnorderedList(element: HTMLElement): Paragraph[] {
+    const items = element.querySelectorAll(':scope > li');
+    const paragraphs: Paragraph[] = [];
+
+    for (const li of Array.from(items)) {
+        const textRuns = extractTextRuns(li as HTMLElement);
+        paragraphs.push(new Paragraph({
+            children: [
+                new TextRun({ text: '• ', font: 'Times New Roman', size: 24 }),
+                ...textRuns,
+            ],
+            spacing: { after: 100 },
+            indent: { left: convertInchesToTwip(0.25) },
+        }));
+    }
+
+    return paragraphs;
+}
+
+/**
+ * Create blockquote with left border styling
+ */
+function createBlockquote(element: HTMLElement): Paragraph {
+    const textRuns = extractTextRuns(element);
+
+    return new Paragraph({
+        children: textRuns.map(run => new TextRun({
+            ...run,
+            italics: true,
+        })),
+        indent: { left: convertInchesToTwip(0.5) },
+        spacing: { before: 200, after: 200 },
+        border: {
+            left: { style: BorderStyle.SINGLE, size: 24, color: '2563EB' },
+        },
+    });
+}
+
+/**
+ * Create horizontal rule
+ */
+function createHorizontalRule(): Paragraph {
+    return new Paragraph({
+        children: [],
+        spacing: { before: 200, after: 200 },
+        border: {
+            bottom: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+        },
+    });
+}
+
+// =============================================================================
+// MAIN EXPORT FUNCTION
+// =============================================================================
+
+/**
+ * Export RPPM to native .docx format
+ * Tables are fully editable in Microsoft Word!
  */
 export async function exportToDocx(rppm: { fullHtml?: string; generatedAt?: string }): Promise<void> {
     if (!rppm.fullHtml) {
@@ -15,323 +388,101 @@ export async function exportToDocx(rppm: { fullHtml?: string; generatedAt?: stri
     }
 
     try {
-        // Create Word-compatible HTML with STRICT table constraints
-        const wordHtml = `
-<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:w="urn:schemas-microsoft-com:office:word"
-      xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-    <meta charset="utf-8">
-    <title>RPPM - GuruPintar AI</title>
-    <!--[if gte mso 9]>
-    <xml>
-        <w:WordDocument>
-            <w:View>Print</w:View>
-            <w:Zoom>100</w:Zoom>
-            <w:DoNotOptimizeForBrowser/>
-        </w:WordDocument>
-    </xml>
-    <![endif]-->
-    <style>
-        /* ============================================
-           PAGE SETUP - A4 Portrait
-           ============================================ */
-        @page Section1 {
-            size: 595.3pt 841.9pt;  /* A4 in points */
-            margin: 2.5cm 2.5cm 2.5cm 2.5cm;
-            mso-page-orientation: portrait;
-        }
-        
-        div.Section1 { page: Section1; }
-        
-        /* ============================================
-           BASE DOCUMENT STYLES
-           ============================================ */
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 12pt;
-            line-height: 1.8;
-            color: #000000;
-            margin: 0;
-            padding: 0;
-            width: 595.3pt;  /* A4 width */
-            max-width: 595.3pt;
-        }
-        
-        /* ============================================
-           HEADINGS WITH PROFESSIONAL SPACING
-           ============================================ */
-        h1 {
-            font-size: 18pt;
-            font-weight: bold;
-            text-align: center;
-            margin: 0 0 18pt 0;
-            letter-spacing: 0.5pt;
-            page-break-after: avoid;
-        }
-        
-        h2 {
-            font-size: 14pt;
-            font-weight: bold;
-            margin: 30pt 0 16pt 0;
-            padding-bottom: 10pt;
-            border-bottom: 2pt solid #000000;
-            page-break-after: avoid;
-        }
-        
-        h3 {
-            font-size: 12pt;
-            font-weight: bold;
-            margin: 22pt 0 12pt 0;
-            page-break-after: avoid;
-        }
-        
-        /* ============================================
-           TEXT ELEMENTS
-           ============================================ */
-        p {
-            margin: 0 0 12pt 0;
-            text-align: justify;
-            line-height: 1.8;
-        }
-        
-        ol, ul {
-            margin: 10pt 0 14pt 0;
-            padding-left: 28pt;
-        }
-        
-        li {
-            margin-bottom: 8pt;
-            line-height: 1.6;
-        }
-        
-        blockquote {
-            border-left: 4pt solid #2563eb;
-            padding: 14pt 0 14pt 18pt;
-            margin: 18pt 0;
-            font-style: italic;
-            background-color: #f8fafc;
-        }
-        
-        /* ============================================
-           TABLES - STRICT WIDTH CONTROL
-           ============================================ */
-        table {
-            width: 100% !important;
-            max-width: 100% !important;
-            border-collapse: collapse !important;
-            margin: 14pt 0 18pt 0;
-            
-            /* CRITICAL: Force table to fit page width */
-            table-layout: fixed !important;
-            
-            /* MSO-specific properties for Word */
-            mso-table-layout-alt: fixed;
-            mso-table-wrap: none;
-            mso-padding-alt: 0in 0in 0in 0in;
-        }
-        
-        /* ============================================
-           TABLE ROWS - PREVENT SPLITTING
-           ============================================ */
-        tr {
-            page-break-inside: avoid !important;
-            page-break-after: auto;
-            
-            /* MSO-specific */
-            mso-row-margin-left: 0;
-            mso-row-margin-right: 0;
-        }
-        
-        /* ============================================
-           TABLE CELLS - WORD WRAP ENABLED
-           ============================================ */
-        td, th {
-            border: 1pt solid #000000;
-            padding: 8pt !important;
-            vertical-align: top;
-            font-size: 10.5pt;
-            line-height: 1.3;
-            
-            /* CRITICAL: Enable word wrapping */
-            word-wrap: break-word !important;
-            overflow-wrap: break-word !important;
-            white-space: normal !important;
-            
-            /* MSO-specific cell properties */
-            mso-cell-special: normal;
-            mso-style-textfill-fill-alpha: 100.0%;
-        }
-        
-        th {
-            background-color: #f5f5f5;
-            font-weight: bold;
-            text-align: center;
-            font-size: 10.5pt;
-        }
-        
-        /* ============================================
-           AUTOMATIC COLUMN WIDTH DISTRIBUTION
-           For tables with many columns, distribute evenly
-           ============================================ */
-        
-        /* 2 columns: 50% each */
-        table tr td:first-child:nth-last-child(2),
-        table tr td:first-child:nth-last-child(2) ~ td,
-        table tr th:first-child:nth-last-child(2),
-        table tr th:first-child:nth-last-child(2) ~ th {
-            width: 50% !important;
-        }
-        
-        /* 3 columns: 33.33% each */
-        table tr td:first-child:nth-last-child(3),
-        table tr td:first-child:nth-last-child(3) ~ td,
-        table tr th:first-child:nth-last-child(3),
-        table tr th:first-child:nth-last-child(3) ~ th {
-            width: 33.33% !important;
-        }
-        
-        /* 4 columns: 25% each */
-        table tr td:first-child:nth-last-child(4),
-        table tr td:first-child:nth-last-child(4) ~ td,
-        table tr th:first-child:nth-last-child(4),
-        table tr th:first-child:nth-last-child(4) ~ th {
-            width: 25% !important;
-        }
-        
-        /* 5 columns: 20% each */
-        table tr td:first-child:nth-last-child(5),
-        table tr td:first-child:nth-last-child(5) ~ td,
-        table tr th:first-child:nth-last-child(5),
-        table tr th:first-child:nth-last-child(5) ~ th {
-            width: 20% !important;
-        }
-        
-        /* 6 columns: 16.66% each */
-        table tr td:first-child:nth-last-child(6),
-        table tr td:first-child:nth-last-child(6) ~ td,
-        table tr th:first-child:nth-last-child(6),
-        table tr th:first-child:nth-last-child(6) ~ th {
-            width: 16.66% !important;
-        }
-        
-        /* 7 columns: 14.28% each */
-        table tr td:first-child:nth-last-child(7),
-        table tr td:first-child:nth-last-child(7) ~ td,
-        table tr th:first-child:nth-last-child(7),
-        table tr th:first-child:nth-last-child(7) ~ th {
-            width: 14.28% !important;
-        }
-        
-        /* 8 columns: 12.5% each */
-        table tr td:first-child:nth-last-child(8),
-        table tr td:first-child:nth-last-child(8) ~ td,
-        table tr th:first-child:nth-last-child(8),
-        table tr th:first-child:nth-last-child(8) ~ th {
-            width: 12.5% !important;
-        }
-        
-        /* 9 columns: 11.11% each */
-        table tr td:first-child:nth-last-child(9),
-        table tr td:first-child:nth-last-child(9) ~ td,
-        table tr th:first-child:nth-last-child(9),
-        table tr th:first-child:nth-last-child(9) ~ th {
-            width: 11.11% !important;
-        }
-        
-        /* 10 columns: 10% each */
-        table tr td:first-child:nth-last-child(10),
-        table tr td:first-child:nth-last-child(10) ~ td,
-        table tr th:first-child:nth-last-child(10),
-        table tr th:first-child:nth-last-child(10) ~ th {
-            width: 10% !important;
-        }
-        
-        /* 11 columns: 9.09% each */
-        table tr td:first-child:nth-last-child(11),
-        table tr td:first-child:nth-last-child(11) ~ td,
-        table tr th:first-child:nth-last-child(11),
-        table tr th:first-child:nth-last-child(11) ~ th {
-            width: 9.09% !important;
-        }
-        
-        /* 12 columns: 8.33% each */
-        table tr td:first-child:nth-last-child(12),
-        table tr td:first-child:nth-last-child(12) ~ td,
-        table tr th:first-child:nth-last-child(12),
-        table tr th:first-child:nth-last-child(12) ~ th {
-            width: 8.33% !important;
-        }
-        
-        /* ============================================
-           SIGNATURE TABLE - NO BORDERS
-           ============================================ */
-        table:last-of-type {
-            margin-top: 60pt !important;
-            margin-bottom: 30pt !important;
-            page-break-inside: avoid !important;
-        }
-        
-        table:last-of-type td {
-            border: none !important;
-            padding: 24pt 20pt !important;
-            text-align: center;
-            vertical-align: top;
-            width: 50% !important;
-            line-height: 2.4;
-        }
-        
-        table:last-of-type strong {
-            display: block;
-            margin-top: 50pt;
-            margin-bottom: 4pt;
-            font-size: 12pt;
-        }
-        
-        /* ============================================
-           PRINT & COMPATIBILITY
-           ============================================ */
-        @media print {
-            body { 
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            table {
-                page-break-inside: auto !important;
-            }
-            tr {
-                page-break-inside: avoid !important;
-            }
-        }
-    </style>
-</head>
-<body>
-<div class="Section1">
-    ${rppm.fullHtml}
-    
-    <hr style="margin-top: 40pt; border: none; border-top: 1pt solid #cccccc;">
-    <p style="text-align: center; font-size: 9pt; color: #666666; margin-top: 16pt;">
-        ✨ Dokumen dihasilkan oleh GuruPintar AI pada ${rppm.generatedAt ? new Date(rppm.generatedAt).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')}
-    </p>
-</div>
-</body>
-</html>`;
+        // Parse HTML to docx objects
+        const docChildren = parseHtmlToDocx(rppm.fullHtml);
 
-        // Create blob with Word-compatible MIME type and BOM
-        const blob = new Blob(['\ufeff', wordHtml], {
-            type: 'application/msword'
+        // Add footer with timestamp
+        const footerText = `✨ Dokumen dihasilkan oleh GuruDok AI pada ${rppm.generatedAt ? new Date(rppm.generatedAt).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')}`;
+
+        // Create document
+        const doc = new Document({
+            styles: {
+                default: {
+                    document: {
+                        run: {
+                            font: 'Times New Roman',
+                            size: 24, // 12pt
+                        },
+                    },
+                    heading1: {
+                        run: {
+                            font: 'Times New Roman',
+                            size: 36, // 18pt
+                            bold: true,
+                        },
+                        paragraph: {
+                            spacing: { after: 300 },
+                            alignment: AlignmentType.CENTER,
+                        },
+                    },
+                    heading2: {
+                        run: {
+                            font: 'Times New Roman',
+                            size: 28, // 14pt
+                            bold: true,
+                        },
+                        paragraph: {
+                            spacing: { before: 400, after: 200 },
+                            border: {
+                                bottom: { style: BorderStyle.SINGLE, size: 12, color: '000000' },
+                            },
+                        },
+                    },
+                    heading3: {
+                        run: {
+                            font: 'Times New Roman',
+                            size: 24, // 12pt
+                            bold: true,
+                        },
+                        paragraph: {
+                            spacing: { before: 300, after: 150 },
+                        },
+                    },
+                },
+            },
+            sections: [{
+                properties: {
+                    page: {
+                        size: {
+                            width: convertInchesToTwip(8.27), // A4 width
+                            height: convertInchesToTwip(11.69), // A4 height
+                        },
+                        margin: {
+                            top: convertInchesToTwip(1),
+                            right: convertInchesToTwip(1),
+                            bottom: convertInchesToTwip(1),
+                            left: convertInchesToTwip(1),
+                        },
+                    },
+                },
+                footers: {
+                    default: new Footer({
+                        children: [
+                            new Paragraph({
+                                children: [new TextRun({ text: footerText, size: 18, color: '666666' })],
+                                alignment: AlignmentType.CENTER,
+                            }),
+                        ],
+                    }),
+                },
+                children: docChildren,
+            }],
         });
 
-        // Generate filename with date
+        // Generate and download
+        const blob = await Packer.toBlob(doc);
         const date = new Date().toISOString().split('T')[0];
-        saveAs(blob, `RPPM_${date}.doc`);
+        saveAs(blob, `RPPM_${date}.docx`);
 
     } catch (error) {
         console.error('DOCX Export Error:', error);
         throw new Error('Gagal membuat file DOCX. Silakan coba lagi.');
     }
 }
+
+// =============================================================================
+// BACKUP: HTML EXPORT (unchanged)
+// =============================================================================
 
 /**
  * Alternative: Export as pure HTML file
@@ -348,7 +499,7 @@ export function exportToHtml(rppm: { fullHtml?: string; generatedAt?: string }):
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>RPPM - GuruPintar AI</title>
+    <title>RPPM - GuruDok AI</title>
     <style>
         @page { size: A4; margin: 2.5cm; }
         body {
@@ -406,7 +557,7 @@ export function exportToHtml(rppm: { fullHtml?: string; generatedAt?: string }):
         ${rppm.fullHtml}
     </div>
     <div class="footer">
-        ✨ Dihasilkan oleh GuruPintar AI · ${rppm.generatedAt ? new Date(rppm.generatedAt).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')}
+        ✨ Dihasilkan oleh GuruDok AI · ${rppm.generatedAt ? new Date(rppm.generatedAt).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')}
     </div>
 </body>
 </html>`;

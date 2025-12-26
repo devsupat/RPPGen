@@ -2,7 +2,7 @@
 # Project Title
 
 📄 Product Requirements Document (PRD)
-Nama Proyek: GuruPintar AI (Deep Learning Edition) Versi: 4.0 (Final Production Ready) Target Pengguna: Guru SD, SMP, SMA (Semua tingkat literasi digital).
+Nama Proyek: GuruDok AI (Deep Learning Edition) Versi: 4.0 (Final Production Ready) Target Pengguna: Guru SD, SMP, SMA (Semua tingkat literasi digital).
 
 1. Latar Belakang & Filosofi
 Membangun generator "Rencana Pembelajaran Mendalam" (RPPM) yang cerdas, patuh pada aturan kurikulum terbaru (SK 046/2025), dan melindungi privasi guru.

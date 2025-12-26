@@ -294,7 +294,7 @@ export async function exportToPdf(rppm: { fullHtml?: string; generatedAt?: strin
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPPM - GuruPintar AI</title>
+    <title>RPPM - GuruDok AI</title>
     <style>${PRINT_CSS}</style>
 </head>
 <body>
@@ -356,7 +356,7 @@ export function printToPdf(rppm: { fullHtml?: string; generatedAt?: string }): v
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>RPPM - GuruPintar AI</title>
+    <title>RPPM - GuruDok AI</title>
     <style>${PRINT_CSS}</style>
 </head>
 <body>

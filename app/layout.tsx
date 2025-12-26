@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GuruPintar AI - Generator RPPM Deep Learning",
+  title: "GuruDok AI - Generator RPPM Deep Learning",
   description: "Aplikasi generator Rencana Pembelajaran Mendalam (RPPM) berbasis Kurikulum Merdeka (CP 2025) untuk guru SD, SMP, SMA.",
   keywords: ["RPPM", "RPP", "Kurikulum Merdeka", "Deep Learning", "Guru", "Pendidikan"],
-  authors: [{ name: "GuruPintar AI" }],
+  authors: [{ name: "GuruDok AI" }],
 };
 
 export default function RootLayout({

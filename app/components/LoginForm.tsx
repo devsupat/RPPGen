@@ -97,7 +97,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
 
                     {/* Title */}
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                        GuruPintar AI
+                        GuruDok AI
                     </h1>
 
                     {/* Subtitle - separated with good spacing */}
@@ -211,7 +211,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
                 {/* ===== BOTTOM FOOTER ===== */}
                 <div className="mt-8 text-center">
                     <p className="text-xs text-gray-400">
-                        © 2025 GuruPintar AI · Privasi Terjaga
+                        © 2025 GuruDok AI · Privasi Terjaga
                     </p>
                 </div>
             </div>

@@ -97,25 +97,24 @@ async function ensureMetricsTab(): Promise<GoogleSpreadsheetRow[] | null> {
 }
 
 // Track an event (increment counter)
+// Note: Caller can choose to await or not. For non-blocking usage,
+// call without await: trackEvent('login').catch(() => {});
 export async function trackEvent(eventType: MetricEvent): Promise<void> {
-    // Run async, don't block the main request
-    setImmediate(async () => {
-        try {
-            const rows = await ensureMetricsTab();
-            if (!rows) return;
+    try {
+        const rows = await ensureMetricsTab();
+        if (!rows) return;
 
-            const row = rows.find(r => r.get('event_type') === eventType);
-            if (row) {
-                const currentCount = parseInt(row.get('count') || '0', 10);
-                row.set('count', (currentCount + 1).toString());
-                row.set('last_update', new Date().toISOString());
-                await row.save();
-            }
-        } catch (error) {
-            // Silently fail - metrics should never break the app
-            console.error('Metrics: Failed to track event', eventType, error);
+        const row = rows.find(r => r.get('event_type') === eventType);
+        if (row) {
+            const currentCount = parseInt(row.get('count') || '0', 10);
+            row.set('count', (currentCount + 1).toString());
+            row.set('last_update', new Date().toISOString());
+            await row.save();
         }
-    });
+    } catch (error) {
+        // Silently fail - metrics should never break the app
+        console.error('Metrics: Failed to track event', eventType, error);
+    }
 }
 
 // Get all metrics (for admin endpoint)

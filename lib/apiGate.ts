@@ -8,6 +8,19 @@ import { NextRequest } from 'next/server';
 // CONFIGURATION
 // ============================================================================
 
+// Development bypass switch
+// Set API_GATE_DISABLED=true in environment to disable all protections during development
+// WARNING: Never enable this in production!
+const API_GATE_DISABLED = process.env.API_GATE_DISABLED === 'true';
+
+/**
+ * Check if API Gate protections are disabled (development mode)
+ * When disabled, rate limit, daily quota, and timeout are bypassed
+ */
+export function isGateDisabled(): boolean {
+    return API_GATE_DISABLED;
+}
+
 // Protection limits for non-owner requests
 const RATE_LIMIT_PER_MINUTE = 30;  // Max requests per minute per IP
 const DAILY_QUOTA_PER_IP = 300;    // Max requests per day per IP
@@ -90,6 +103,11 @@ export function isOwner(request: NextRequest): boolean {
  * Returns { allowed: true } if under limit, { allowed: false, retryAfter } if exceeded
  */
 export function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+    // Development bypass: skip rate limit check when API_GATE_DISABLED=true
+    if (API_GATE_DISABLED) {
+        return { allowed: true };
+    }
+
     const now = Date.now();
     const windowMs = 60 * 1000; // 1 minute window
 
@@ -129,6 +147,11 @@ function getTodayString(): string {
  * Returns { allowed: true, remaining } if under quota, { allowed: false } if exceeded
  */
 export function checkDailyQuota(ip: string): { allowed: boolean; remaining?: number } {
+    // Development bypass: skip quota check when API_GATE_DISABLED=true
+    if (API_GATE_DISABLED) {
+        return { allowed: true, remaining: DAILY_QUOTA_PER_IP };
+    }
+
     const today = getTodayString();
     const record = dailyQuotaStore.get(ip);
 
@@ -157,6 +180,11 @@ export function checkDailyQuota(ip: string): { allowed: boolean; remaining?: num
  * If the promise doesn't resolve within `ms` milliseconds, rejects with timeout error
  */
 export async function withTimeout<T>(promise: Promise<T>, ms: number = TIMEOUT_MS): Promise<T> {
+    // Development bypass: skip timeout protection when API_GATE_DISABLED=true
+    if (API_GATE_DISABLED) {
+        return promise;
+    }
+
     let timeoutId: NodeJS.Timeout;
 
     const timeoutPromise = new Promise<never>((_, reject) => {

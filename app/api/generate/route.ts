@@ -118,6 +118,33 @@ export async function POST(request: NextRequest) {
     }
 }
 
+/**
+ * Format Alokasi Waktu with smart description
+ * Input: "3 x 35 menit", jumlahPertemuan: 3
+ * Output: "3 × 35 menit (Total 9 JP — 3 pertemuan @35 menit)"
+ * 
+ * Parses existing input values only - no new fields required.
+ */
+function formatSmartAlokasi(alokasiWaktu: string, jumlahPertemuan: number): string {
+    // Parse alokasiWaktu format: "N x M menit" or "N × M menit"
+    const match = alokasiWaktu.match(/(\d+)\s*[x×]\s*(\d+)\s*menit/i);
+
+    if (!match) {
+        // If format doesn't match, return original with basic pertemuan info
+        return `${alokasiWaktu} (${jumlahPertemuan} pertemuan)`;
+    }
+
+    const jpPerPertemuan = parseInt(match[1], 10);  // Jam Pelajaran per pertemuan
+    const menitPerJP = parseInt(match[2], 10);      // Menit per JP
+
+    // Calculate total JP
+    const totalJP = jpPerPertemuan * jumlahPertemuan;
+
+    // Build smart description
+    // Format: "N × M menit (Total X JP — Y pertemuan @M menit)"
+    return `${jpPerPertemuan} × ${menitPerJP} menit (Total ${totalJP} JP — ${jumlahPertemuan} pertemuan @${menitPerJP} menit)`;
+}
+
 function getDemoHtml(data: any): string {
     // Format tanggal keabsahan
     let tanggalStr: string;
@@ -139,7 +166,9 @@ function getDemoHtml(data: any): string {
     const kota = data.identity.kota || 'Kota';
     const kelas = data.curriculum.kelas || '1';
     const jenjang = data.curriculum.jenjang || 'SD';
-    const alokasi = data.curriculum.alokasiWaktu || '2 x 35 menit';
+    const alokasiRaw = data.curriculum.alokasiWaktu || '2 x 35 menit';
+    const jumlahPertemuan = data.curriculum.jumlahPertemuan || 1;
+    const alokasi = formatSmartAlokasi(alokasiRaw, jumlahPertemuan);
     const model = data.curriculum.model || 'PBL';
     const kondisi = data.curriculum.kondisiAwalMurid || 'Murid memiliki pengetahuan dasar tentang materi ini.';
     const cpText = data.cpText || 'Capaian Pembelajaran sesuai kurikulum.';

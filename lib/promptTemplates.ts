@@ -18,6 +18,25 @@ ATURAN PENULISAN WAJIB:
 7. Semua sel tabel gunakan padding: <td style="padding: 8px;">.
 8. WAJIB menghasilkan SEMUA bagian rubrik penilaian secara LENGKAP sampai akhir.
 
+ATURAN BEBAN BELAJAR INDONESIA (JP = Jam Pelajaran):
+9. Interpretasi format waktu:
+   - "1 x 35 menit" = 1 JP (SD)
+   - "2 x 35 menit" = 2 JP (SD)
+   - "2 x 40 menit" = 2 JP (SMP)
+   - "2 x 45 menit" = 2 JP (SMA)
+   - "3 x 45 menit" = 3 JP (SMA)
+10. Total JP = JP per pertemuan × jumlah pertemuan.
+11. Tulis Alokasi Waktu dalam format: "{TotalJP} JP ({JumlahPertemuan} pertemuan @ {AlokasiWaktu})".
+12. DISTRIBUSI KEGIATAN PER PERTEMUAN (WAJIB untuk multi-pertemuan):
+    - Pertemuan Awal → Eksplorasi & Pemahaman Konsep
+    - Pertemuan Tengah → Pendalaman & Latihan Terbimbing  
+    - Pertemuan Akhir → Aplikasi, Refleksi & Asesmen
+13. ADAPTASI BERDASARKAN MAPEL:
+    - Matematika/IPA → Progresi kompleksitas bertahap (konkret → abstrak)
+    - PAI/IPS/PPKn → Konsep → Nilai/Makna → Penerapan Kehidupan
+    - Bahasa → Reseptif → Produktif → Kreatif
+    - Seni/PJOK → Apresiasi → Eksplorasi → Kreasi
+
 STRUKTUR DOKUMEN YANG WAJIB DIIKUTI (LENGKAP):
 
 <h1 style="text-align:center;">PERENCANAAN PEMBELAJARAN MENDALAM</h1>
@@ -262,10 +281,226 @@ INSTRUKSI KRITIS - SUMBER BELAJAR:
    d) Judul/deskripsi HARUS spesifik sesuai materi (misal: "Video Fotosintesis Tumbuhan" bukan "Video YouTube")
 5. VALIDASI: Setiap URL harus relevan dengan mata pelajaran dan topik!`;
 
+/**
+ * Calculate JP (Jam Pelajaran) info from alokasiWaktu and jumlahPertemuan
+ * @param alokasiWaktu - e.g., "2 x 35 menit"
+ * @param jumlahPertemuan - e.g., 3
+ * @returns Formatted JP info object
+ */
+function calculateJPInfo(alokasiWaktu: string, jumlahPertemuan: number) {
+  const match = alokasiWaktu.match(/(\d+)\s*[x×]\s*(\d+)\s*menit/i);
+
+  if (!match) {
+    return {
+      jpPerPertemuan: 1,
+      menitPerJP: 35,
+      totalJP: jumlahPertemuan,
+      formatted: `${jumlahPertemuan} JP (${jumlahPertemuan} pertemuan @ ${alokasiWaktu})`
+    };
+  }
+
+  const jpPerPertemuan = parseInt(match[1], 10);
+  const menitPerJP = parseInt(match[2], 10);
+  const totalJP = jpPerPertemuan * jumlahPertemuan;
+
+  return {
+    jpPerPertemuan,
+    menitPerJP,
+    totalJP,
+    formatted: `${totalJP} JP (${jumlahPertemuan} pertemuan @ ${jpPerPertemuan} × ${menitPerJP} menit)`
+  };
+}
+
+/**
+ * Generate meeting distribution guidance based on subject and number of meetings
+ */
+function generateMeetingDistribution(mapel: string, jumlahPertemuan: number): string {
+  if (jumlahPertemuan <= 1) {
+    return 'Pertemuan tunggal: Eksplorasi → Pendalaman → Refleksi dalam satu sesi.';
+  }
+
+  // Subject-based distribution patterns
+  const isMathScience = /matematika|ipa|fisika|kimia|biologi/i.test(mapel);
+  const isReligionCivics = /pai|ppkn|ips|pkn|agama/i.test(mapel);
+  const isLanguage = /bahasa|sastra|english/i.test(mapel);
+
+  let distribution = `\n📅 DISTRIBUSI ${jumlahPertemuan} PERTEMUAN:\n`;
+
+  for (let i = 1; i <= jumlahPertemuan; i++) {
+    const position = i === 1 ? 'awal' : i === jumlahPertemuan ? 'akhir' : 'tengah';
+
+    if (position === 'awal') {
+      if (isMathScience) {
+        distribution += `• Pertemuan ${i}: Eksplorasi konsep dasar & manipulasi konkret\n`;
+      } else if (isReligionCivics) {
+        distribution += `• Pertemuan ${i}: Pemahaman konsep & nilai-nilai dasar\n`;
+      } else if (isLanguage) {
+        distribution += `• Pertemuan ${i}: Keterampilan reseptif (menyimak/membaca)\n`;
+      } else {
+        distribution += `• Pertemuan ${i}: Eksplorasi & pemahaman konsep dasar\n`;
+      }
+    } else if (position === 'akhir') {
+      if (isMathScience) {
+        distribution += `• Pertemuan ${i}: Aplikasi abstrak, problem solving & asesmen\n`;
+      } else if (isReligionCivics) {
+        distribution += `• Pertemuan ${i}: Penerapan dalam kehidupan & refleksi\n`;
+      } else if (isLanguage) {
+        distribution += `• Pertemuan ${i}: Produksi kreatif & asesmen\n`;
+      } else {
+        distribution += `• Pertemuan ${i}: Aplikasi, refleksi & asesmen\n`;
+      }
+    } else {
+      if (isMathScience) {
+        distribution += `• Pertemuan ${i}: Pendalaman konsep & latihan terbimbing\n`;
+      } else if (isReligionCivics) {
+        distribution += `• Pertemuan ${i}: Internalisasi nilai & diskusi kontekstual\n`;
+      } else if (isLanguage) {
+        distribution += `• Pertemuan ${i}: Keterampilan produktif (berbicara/menulis)\n`;
+      } else {
+        distribution += `• Pertemuan ${i}: Pendalaman & latihan terbimbing\n`;
+      }
+    }
+  }
+
+  return distribution;
+}
+
+/**
+ * Generate smart learning resources based on subject and topic
+ * Returns curated, real Indonesian education resources
+ */
+function generateSmartResources(mapel: string, topik: string, jenjang: string, kelas: number): string {
+  const jenj = jenjang?.toUpperCase() || 'SD';
+  const kelasNum = kelas || 4;
+
+  // Base trusted Indonesian educational platforms
+  const trustedPlatforms = {
+    rumahBelajar: 'https://belajar.kemdikbud.go.id',
+    bse: 'https://buku.kemdikbud.go.id',
+    guruberbagi: 'https://guruberbagi.kemdikbud.go.id',
+    merdekaMengajar: 'https://guru.kemdikbud.go.id',
+  };
+
+  // Subject category detection
+  const isMath = /matematika/i.test(mapel);
+  const isIPA = /ipa|sains|biologi|fisika|kimia/i.test(mapel);
+  const isIPS = /ips|sejarah|geografi|ekonomi|sosiologi/i.test(mapel);
+  const isPAI = /pai|agama|islam/i.test(mapel);
+  const isBahasa = /bahasa|indonesia|inggris|english/i.test(mapel);
+  const isSBdP = /sbdp|seni|budaya|prakarya/i.test(mapel);
+  const isPPKn = /ppkn|pkn|kewarganegaraan/i.test(mapel);
+  const isPJOK = /pjok|penjas|olahraga/i.test(mapel);
+
+  // Build resource recommendations based on subject
+  let resources = `
+📚 SUMBER BELAJAR YANG DIREKOMENDASIKAN:
+Gunakan sumber-sumber berikut untuk bagian F. Sumber Belajar Tambahan:
+
+`;
+
+  // 1. Rumah Belajar (official Kemdikbud platform)
+  resources += `1. VIDEO PEMBELAJARAN:
+   • Platform: Rumah Belajar Kemdikbud
+   • URL: ${trustedPlatforms.rumahBelajar}
+   • Cari video untuk: "${mapel} - ${topik}" jenjang ${jenj}
+   • Tulis: "Video ${topik} - Rumah Belajar Kemdikbud" | "${trustedPlatforms.rumahBelajar}"
+
+`;
+
+  // 2. BSE (Buku Sekolah Elektronik)
+  resources += `2. BUKU REFERENSI:
+   • Platform: BSE Kemdikbud (Buku Sekolah Elektronik)
+   • URL: ${trustedPlatforms.bse}
+   • Tulis: "Buku ${mapel} Kelas ${kelasNum} Kurikulum Merdeka" | "${trustedPlatforms.bse}"
+
+`;
+
+  // 3. Guru Berbagi (lesson plans & materials)
+  resources += `3. MODUL / LKPD:
+   • Platform: Guru Berbagi Kemdikbud
+   • URL: ${trustedPlatforms.guruberbagi}
+   • Tulis: "Modul Ajar ${topik}" | "${trustedPlatforms.guruberbagi}"
+
+`;
+
+  // 4. Subject-specific platforms
+  if (isMath) {
+    resources += `4. SUMBER TAMBAHAN MATEMATIKA:
+   • Zenius: https://www.zenius.net - Video penjelasan konsep matematika
+   • Khan Academy Indonesia: https://id.khanacademy.org - Latihan interaktif
+   • Tulis: "Video Konsep ${topik} - Zenius" | "https://www.zenius.net"
+
+`;
+  } else if (isIPA) {
+    resources += `4. SUMBER TAMBAHAN IPA:
+   • Zenius: https://www.zenius.net - Video eksperimen dan konsep IPA
+   • Sains Indonesia: https://sainsindonesia.co.id - Artikel sains
+   • Tulis: "Video Eksperimen ${topik}" | "https://www.zenius.net"
+
+`;
+  } else if (isIPS || isPPKn) {
+    resources += `4. SUMBER TAMBAHAN IPS/PPKn:
+   • Ruangguru: https://www.ruangguru.com - Video pembelajaran
+   • Sejarah Indonesia: https://indonesia.go.id - Portal informasi pemerintah
+   • Tulis: "Artikel ${topik} - Portal Indonesia" | "https://indonesia.go.id"
+
+`;
+  } else if (isPAI) {
+    resources += `4. SUMBER TAMBAHAN PAI:
+   • Kemenag RI: https://kemenag.go.id - Sumber pembelajaran agama
+   • Madrasah Digital: https://madrasah.kemenag.go.id
+   • Tulis: "Materi ${topik} - Kemenag RI" | "https://kemenag.go.id"
+
+`;
+  } else if (isBahasa) {
+    resources += `4. SUMBER TAMBAHAN BAHASA:
+   • KBBI Daring: https://kbbi.kemdikbud.go.id - Kamus resmi
+   • Ruangguru: https://www.ruangguru.com - Video pembelajaran bahasa
+   • Tulis: "Video Pembelajaran ${topik}" | "https://www.ruangguru.com"
+
+`;
+  } else if (isSBdP || isPJOK) {
+    resources += `4. SUMBER TAMBAHAN ${isSBdP ? 'SENI BUDAYA' : 'PJOK'}:
+   • YouTube Kemendikbud: https://www.youtube.com/@kelolapembelajaran
+   • Tulis: "Tutorial ${topik} - Kemendikbud" | "https://belajar.kemdikbud.go.id"
+
+`;
+  } else {
+    resources += `4. SUMBER TAMBAHAN UMUM:
+   • Ruangguru: https://www.ruangguru.com - Video pembelajaran
+   • Zenius: https://www.zenius.net - Penjelasan konsep
+   • Tulis: "Video ${topik}" | "https://belajar.kemdikbud.go.id"
+
+`;
+  }
+
+  resources += `PENTING:
+• Semua URL di atas adalah platform resmi dan terpercaya
+• Gunakan format: "Judul Spesifik" | "URL lengkap"
+• JANGAN ubah URL menjadi placeholder atau example.com
+• Jika perlu sumber tambahan yang tidak ada di daftar, tulis: "Ditambahkan guru secara manual"
+`;
+
+  return resources;
+}
+
 export function buildUserPrompt(data: any) {
   const tanggal = data.identity.tanggalKeabsahan
     ? new Date(data.identity.tanggalKeabsahan).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
     : new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Calculate JP info
+  const jumlahPertemuan = data.curriculum.jumlahPertemuan || 1;
+  const jpInfo = calculateJPInfo(data.curriculum.alokasiWaktu || '2 x 35 menit', jumlahPertemuan);
+  const meetingDistribution = generateMeetingDistribution(data.curriculum.mapel || '', jumlahPertemuan);
+
+  // Generate smart learning resources based on subject and topic
+  const smartResources = generateSmartResources(
+    data.curriculum.mapel || '',
+    data.curriculum.topikMateri || '',
+    data.curriculum.jenjang || 'SD',
+    data.curriculum.kelas || 4
+  );
 
   return `Buatlah dokumen RPP (Rencana Pelaksanaan Pembelajaran) LENGKAP berbasis Pembelajaran Mendalam dengan data berikut.
 
@@ -288,9 +523,15 @@ DATA KURIKULUM:
 • Mata Pelajaran: ${data.curriculum.mapel}
 • Materi Pokok/Topik: ${data.curriculum.topikMateri}
 • Detail Materi: ${data.curriculum.detailMateri || 'Sesuai topik'}
-• Alokasi Waktu: ${data.curriculum.alokasiWaktu}
+• Alokasi Waktu: ${jpInfo.formatted}
 • Model Pembelajaran: ${data.curriculum.model}
-• Jumlah Pertemuan: ${data.curriculum.jumlahPertemuan || '1 pertemuan'}
+• Jumlah Pertemuan: ${jumlahPertemuan} pertemuan
+• Total JP: ${jpInfo.totalJP} JP
+
+📊 BEBAN BELAJAR:
+• JP per pertemuan: ${jpInfo.jpPerPertemuan} JP (${jpInfo.jpPerPertemuan} × ${jpInfo.menitPerJP} menit)
+• Total beban: ${jpInfo.totalJP} JP untuk ${jumlahPertemuan} pertemuan
+${meetingDistribution}
 
 KONDISI MURID:
 ${data.curriculum.kondisiAwalMurid || 'Murid memiliki kemampuan heterogen dengan gaya belajar beragam (visual, auditori, kinestetik).'}
@@ -306,24 +547,7 @@ INSTRUKSI PENTING:
 5. Ganti SEMUA placeholder [...] dengan konten aktual.
 6. WAJIB selesaikan sampai bagian VI. TANDA TANGAN.
 
-SUMBER BELAJAR - INSTRUKSI KRITIS:
-7. Untuk bagian F. Sumber Belajar Tambahan:
-   a) Judul/Deskripsi HARUS spesifik sesuai: ${data.curriculum.mapel} - ${data.curriculum.topikMateri}
-   b) DILARANG KERAS menggunakan URL palsu atau placeholder:
-      ❌ example.com
-      ❌ youtube.com/... (tanpa URL lengkap)
-      ❌ https://... (tanpa domain nyata)
-      ❌ www.contoh.com
-   c) Jika Anda TIDAK YAKIN URL yang relevan, tulis: "Ditambahkan guru secara manual"
-   d) Jika Anda YAKIN ada sumber relevan, berikan judul spesifik dan domain nyata
-   
-Contoh BENAR untuk Matematika - Aljabar:
-✅ Video: "Dasar-dasar Aljabar SMP" | "Ditambahkan guru secara manual"
-✅ Artikel: "Penjelasan Aljabar untuk Pemula" | "Ditambahkan guru secara manual"
-
-Contoh SALAH:
-❌ Video: "Video pembelajaran" | "https://youtube.com/..."
-❌ Artikel: "Artikel bagus" | "example.com"
+${smartResources}
 
 PENTING: Kembalikan HTML murni dengan <table border="1"> untuk semua data tabular!`;
 }

@@ -255,6 +255,25 @@ export async function POST(request: NextRequest) {
 // DEMO HTML (simplified version for mobile)
 // ============================================================================
 
+/**
+ * Format Alokasi Waktu with smart description
+ * Input: "3 x 35 menit", jumlahPertemuan: 3
+ * Output: "3 × 35 menit (Total 9 JP — 3 pertemuan @35 menit)"
+ */
+function formatSmartAlokasi(alokasiWaktu: string, jumlahPertemuan: number): string {
+    const match = alokasiWaktu.match(/(\d+)\s*[x×]\s*(\d+)\s*menit/i);
+
+    if (!match) {
+        return `${alokasiWaktu} (${jumlahPertemuan} pertemuan)`;
+    }
+
+    const jpPerPertemuan = parseInt(match[1], 10);
+    const menitPerJP = parseInt(match[2], 10);
+    const totalJP = jpPerPertemuan * jumlahPertemuan;
+
+    return `${jpPerPertemuan} × ${menitPerJP} menit (Total ${totalJP} JP — ${jumlahPertemuan} pertemuan @${menitPerJP} menit)`;
+}
+
 function getDemoHtmlMobile(data: any): string {
     const faseDisplay = data.curriculum.fase?.replace('fase_', '').toUpperCase() || 'B';
     const topik = data.curriculum.topikMateri || 'Materi Pembelajaran';
@@ -262,7 +281,9 @@ function getDemoHtmlMobile(data: any): string {
     const sekolah = data.identity.namaSekolah || 'Sekolah';
     const guru = data.identity.namaGuru || 'Guru';
     const kelas = data.curriculum.kelas || '4';
-    const alokasi = data.curriculum.alokasiWaktu || '2 x 35 menit';
+    const alokasiRaw = data.curriculum.alokasiWaktu || '2 x 35 menit';
+    const jumlahPertemuan = data.curriculum.jumlahPertemuan || 1;
+    const alokasi = formatSmartAlokasi(alokasiRaw, jumlahPertemuan);
     const model = data.curriculum.model || 'PBL';
 
     return `

@@ -12,7 +12,7 @@ export default function ApiLimitModal({ isOpen, onClose, onOpenSettings }: ApiLi
     if (!isOpen) return null;
 
     const handleTutorial = () => {
-        window.open('https://www.youtube.com/watch?v=Me7u7fq9kJ4', '_blank');
+        window.open('https://www.youtube.com/watch?v=jalKNhtVcBQ', '_blank');
     };
 
     const handleOpenSettings = () => {

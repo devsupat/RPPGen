@@ -303,7 +303,7 @@ function getDemoHtml(data: any): string {
             <tr style="background-color: #f2f2f2;">
                 <th style="padding: 8px;">No</th>
                 <th style="padding: 8px;">Nama Murid</th>
-                <th style="padding: 8px;">Bernalar Kritis</th>
+                <th style="padding: 8px;">Penalaran Kritis</th>
                 <th style="padding: 8px;">Kolaborasi</th>
                 <th style="padding: 8px;">Komunikasi</th>
             </tr>

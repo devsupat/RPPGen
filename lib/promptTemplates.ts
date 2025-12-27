@@ -10,13 +10,18 @@ export const SYSTEM_PROMPT = `Anda adalah seorang Kurator Kurikulum dan Pakar Pe
 
 ATURAN PENULISAN WAJIB:
 1. Ganti semua kata "Peserta Didik" menjadi "Murid".
-2. Gunakan gaya bahasa formal namun tetap inspiratif.
-3. Pastikan RPP panjang, mendalam, dan operasional.
-4. Kembalikan HANYA kode HTML murni - DILARANG menggunakan markdown (###, **, -, *).
-5. Gunakan tag HTML: <h1>, <h2>, <h3>, <p>, <ul>, <ol>, <li>, <table>, <tr>, <td>, <th>, <strong>, <br>.
-6. Semua tabel WAJIB menggunakan <table border="1" style="width:100%; border-collapse: collapse;">.
-7. Semua sel tabel gunakan padding: <td style="padding: 8px;">.
-8. WAJIB menghasilkan SEMUA bagian rubrik penilaian secara LENGKAP sampai akhir.
+2. TERMINOLOGI RESMI WAJIB:
+   - Gunakan "Dimensi Profil Lulusan" (DILARANG: "Profil Pelajar Pancasila")
+   - 8 Dimensi Resmi: Keimanan dan Ketakwaan kepada Tuhan Yang Maha Esa, Kewargaan, Penalaran Kritis, Kreativitas, Kolaborasi, Kemandirian, Kesehatan, Komunikasi
+   - Gunakan "Penalaran Kritis" (DILARANG: "Bernalar Kritis")
+   - Gunakan "Kolaborasi" (DILARANG: "Gotong Royong")
+3. Gunakan gaya bahasa formal namun tetap inspiratif.
+4. Pastikan RPP panjang, mendalam, dan operasional.
+5. Kembalikan HANYA kode HTML murni - DILARANG menggunakan markdown (###, **, -, *).
+6. Gunakan tag HTML: <h1>, <h2>, <h3>, <p>, <ul>, <ol>, <li>, <table>, <tr>, <td>, <th>, <strong>, <br>.
+7. Semua tabel WAJIB menggunakan <table border="1" style="width:100%; border-collapse: collapse;">.
+8. Semua sel tabel gunakan padding: <td style="padding: 8px;">.
+9. WAJIB menghasilkan SEMUA bagian rubrik penilaian secara LENGKAP sampai akhir.
 
 ATURAN BEBAN BELAJAR INDONESIA (JP = Jam Pelajaran):
 9. Interpretasi format waktu:
@@ -25,13 +30,13 @@ ATURAN BEBAN BELAJAR INDONESIA (JP = Jam Pelajaran):
    - "2 x 40 menit" = 2 JP (SMP)
    - "2 x 45 menit" = 2 JP (SMA)
    - "3 x 45 menit" = 3 JP (SMA)
-10. Total JP = JP per pertemuan × jumlah pertemuan.
-11. Tulis Alokasi Waktu dalam format: "{TotalJP} JP ({JumlahPertemuan} pertemuan @ {AlokasiWaktu})".
-12. DISTRIBUSI KEGIATAN PER PERTEMUAN (WAJIB untuk multi-pertemuan):
+11. Total JP = JP per pertemuan × jumlah pertemuan.
+12. Tulis Alokasi Waktu dalam format: "{TotalJP} JP ({JumlahPertemuan} pertemuan @ {AlokasiWaktu})".
+13. DISTRIBUSI KEGIATAN PER PERTEMUAN (WAJIB untuk multi-pertemuan):
     - Pertemuan Awal → Eksplorasi & Pemahaman Konsep
     - Pertemuan Tengah → Pendalaman & Latihan Terbimbing  
     - Pertemuan Akhir → Aplikasi, Refleksi & Asesmen
-13. ADAPTASI BERDASARKAN MAPEL:
+14. ADAPTASI BERDASARKAN MAPEL:
     - Matematika/IPA → Progresi kompleksitas bertahap (konkret → abstrak)
     - PAI/IPS/PPKn → Konsep → Nilai/Makna → Penerapan Kehidupan
     - Bahasa → Reseptif → Produktif → Kreatif
@@ -62,11 +67,11 @@ STRUKTUR DOKUMEN YANG WAJIB DIIKUTI (LENGKAP):
 <p><strong>Karakteristik Materi:</strong></p>
 <p>[Jelaskan sifat materi: abstrak/konkret, tingkat kesulitan]</p>
 
-<h3>C. Dimensi Profil Pelajar Pancasila</h3>
+<h3>C. Dimensi Profil Lulusan</h3>
 <ol>
-  <li><strong>Bernalar Kritis:</strong> [Penjelasan]</li>
-  <li><strong>Gotong Royong (Kolaborasi):</strong> [Penjelasan]</li>
-  <li><strong>[Dimensi ketiga]:</strong> [Penjelasan]</li>
+  <li><strong>Penalaran Kritis:</strong> [Penjelasan bagaimana materi mengembangkan kemampuan berpikir kritis]</li>
+  <li><strong>Kolaborasi:</strong> [Penjelasan bagaimana pembelajaran mendorong kerja sama]</li>
+  <li><strong>Komunikasi:</strong> [Penjelasan bagaimana murid mengembangkan kemampuan berkomunikasi]</li>
 </ol>
 
 <h2>II. DESAIN PEMBELAJARAN</h2>
@@ -127,12 +132,12 @@ STRUKTUR DOKUMEN YANG WAJIB DIIKUTI (LENGKAP):
 
 <h2>V. RUBRIK PENILAIAN</h2>
 
-<h3>A. Lembar Penilaian Ceklist Dimensi Profil Pelajar Pancasila</h3>
+<h3>A. Lembar Penilaian Ceklist Dimensi Profil Lulusan</h3>
 <table border="1" style="width:100%; border-collapse: collapse;">
   <tr>
     <th style="padding: 8px; background-color: #e0e7ff;">No</th>
     <th style="padding: 8px; background-color: #e0e7ff;">Nama Murid</th>
-    <th style="padding: 8px; background-color: #e0e7ff;">Bernalar Kritis</th>
+    <th style="padding: 8px; background-color: #e0e7ff;">Penalaran Kritis</th>
     <th style="padding: 8px; background-color: #e0e7ff;">Kolaborasi</th>
     <th style="padding: 8px; background-color: #e0e7ff;">Komunikasi</th>
   </tr>
@@ -564,6 +569,22 @@ export function parseRPPMResponse(aiResponse: string) {
 
   // Ensure tables have proper styling
   cleaned = cleaned.replace(/<table(?![^>]*border)/gi, '<table border="1" style="width:100%; border-collapse: collapse;"');
+
+  // ===== TERMINOLOGY SANITIZATION LAYER =====
+  // Auto-replace forbidden terms with official terminology
+  // This ensures compliance even if AI model doesn't follow instructions perfectly
+
+  // Replace "Profil Pelajar Pancasila" → "Dimensi Profil Lulusan"
+  cleaned = cleaned.replace(/Profil Pelajar Pancasila/gi, 'Dimensi Profil Lulusan');
+
+  // Replace "Peserta Didik" → "Murid"
+  cleaned = cleaned.replace(/Peserta Didik/gi, 'Murid');
+
+  // Replace "Bernalar Kritis" → "Penalaran Kritis"
+  cleaned = cleaned.replace(/Bernalar Kritis/gi, 'Penalaran Kritis');
+
+  // Replace "Gotong Royong" → "Kolaborasi" (when used as dimension name)
+  cleaned = cleaned.replace(/Gotong Royong/gi, 'Kolaborasi');
 
   // ===== URL VALIDATION LAYER =====
   // Detect and replace dummy/placeholder URLs in learning resources
